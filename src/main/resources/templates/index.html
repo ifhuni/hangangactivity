@@ -1,17 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spring Boot with Bootstrap</title>
+    <title>HangangActivity</title>
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap JS -->
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap ICON -->
+    <link rel="stylesheet" href="/css/bootstrap-icons.css">
 </head>
 <body>
-    <h1>Welcome to Spring Boot!</h1>
-    <p>This is a sample HTML page with Bootstrap.</p>
+    <!-- 헤더 -->
+    <div th:replace="fragments/header.html :: header"></div>
 
-    <!-- Bootstrap JS -->
-    <script src="/js/bootstrap.min.js"></script>
+    <div class="container mt-5">
+        <!-- 동적 메시지 출력 -->
+        <h1 th:text="${message}"></h1>
+        <p>This is your first Spring web page.</p>
+        <button class="btn btn-primary">Click Me</button>
+        <i class="bi bi-alarm"></i>
+    </div>
+
+    <!-- 바텀 -->
+    <div th:replace="fragments/footer.html :: footer"></div>
+
+    <script>
+        document.querySelector("button").addEventListener("click", function() {
+            alert("Button clicked!");
+        });
+    </script>
 </body>
 </html>

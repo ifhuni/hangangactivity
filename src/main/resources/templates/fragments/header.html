@@ -1,0 +1,93 @@
+<header th:fragment="header" style="border-bottom: 1px solid #e5e7eb;padding-top:22px">
+    <div style="background-color: #ffffff;">
+        <!-- 상단 영역: 사이트 아이콘, 버튼 -->
+        <div class="container d-flex justify-content-between align-items-center">
+            <!-- 사이트 아이콘 -->
+            <div class="d-flex align-items-center">
+                <h1 class="h4 mb-0" style="font-weight: 600;">
+                    <span style="color: #00B493;">Hangang</span>Activity
+                </h1>
+            </div>
+            
+            
+            <!-- 버튼들 -->
+            <div class="d-flex">
+                <button class="btn btn-outline-primary me-2" type="button">로그인</button>
+                <button class="btn btn-outline-secondary me-2" type="button">예약 확인</button>
+                <button class="btn btn-outline-dark" type="button">
+                    <i class="bi bi-bell"></i> 알림
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 네비게이션 바 -->
+    <div style="background-color: #ffffff;">
+        <div class="container" style="margin-top:16px">
+            <nav class="navbar navbar-expand-lg navbar-light">
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <!-- 육상 드롭다운 -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="landDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                육상
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="landDropdown">
+                                <!-- Sports Climbing -->
+                                <li><a class="dropdown-item" href="#">스포츠 클라이밍</a></li>
+                                <!-- Skate Board -->
+                                <li><a class="dropdown-item" href="#">스케이트 보드</a></li>
+                                <!-- Yoga -->
+                                <li><a class="dropdown-item" href="#">요가</a></li>
+                                <!-- Horse Riding -->
+                                <li><a class="dropdown-item" href="#">승마체험</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- 수상 드롭다운 -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="waterDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                수상
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="waterDropdown">
+                                <!-- Kayak -->
+                                <li><a class="dropdown-item" href="#">카약</a></li>
+                                <!-- Paddle Board -->
+                                <li><a class="dropdown-item" href="#">카약</a></li>
+                                <!-- Wind Surfing -->
+                                <li><a class="dropdown-item" href="#">윈드서핑</a></li>
+                                <!-- Wake Board -->
+                                <li><a class="dropdown-item" href="#">웨이크 보드</a></li>
+                                <!-- Yacht -->
+                                <li><a class="dropdown-item" href="#">요트</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- 항공 드롭다운 -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="airDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                항공
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="airDropdown">
+                                <!-- Light Aircraft tour -->
+                                <li><a class="dropdown-item" href="#">경비행기 체럼</a></li>
+                                <!-- Helicopter tour -->
+                                <li><a class="dropdown-item" href="#">헬리콥터 체험</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- 렌탈 드롭다운 -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="rentalDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                렌탈
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="rentalDropdown">
+                                <li><a class="dropdown-item" href="#">캠핑</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </div>
+</header>
