@@ -9,27 +9,66 @@
     <!-- Bootstrap JS -->
     <script src="/js/bootstrap.bundle.min.js"></script>
     <!-- Bootstrap ICON -->
-    <link rel="stylesheet" href="/css/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+
+    <style>
+        .container-body {
+            display: flex;
+            justify-content: space-between;
+            margin: 0 auto;
+            max-width: 1200px;
+        }
+        .filter-section {
+            flex: 1;
+            max-width: 240px;
+        }
+        .content-section {
+            margin: 0 auto;
+            flex: 3;
+        }
+        .ad-section {
+            flex: 1;
+            max-width: 300px;
+        }
+    </style>
 </head>
 <body>
     <!-- 헤더 -->
     <div th:replace="fragments/header.html :: header"></div>
 
-    <div class="container mt-5">
-        <!-- 동적 메시지 출력 -->
-        <h1 th:text="${message}"></h1>
-        <p>This is your first Spring web page.</p>
-        <button class="btn btn-primary">Click Me</button>
-        <i class="bi bi-alarm"></i>
-    </div>
+    <main class="container-body my-4">
+        <!-- Filter Section -->
+        <aside class="filter-section bg-light p-3 mr-3">
+            <h4>Filter</h4>
+            <!-- Add filter controls here -->
+            <p>Filter options will go here.</p>
+            <button class="btn btn-primary btn-sm" onclick="applyFilter()">Apply Filter</button>
+        </aside>
+
+        <!-- Content Section -->
+        <section class="content-section bg-white p-3">
+            <h4>Content</h4>
+            <div id="filtered-content">
+                <p>Content based on filter will appear here.</p>
+            </div>
+        </section>
+
+        <!-- Ad Section -->
+        <aside class="ad-section bg-secondary text-white p-3 ml-3">
+            <h4>Advertisements</h4>
+            <p>Ad content will go here.</p>
+        </aside>
+    </main>
 
     <!-- 바텀 -->
     <div th:replace="fragments/footer.html :: footer"></div>
 
     <script>
-        document.querySelector("button").addEventListener("click", function() {
-            alert("Button clicked!");
-        });
+        function applyFilter() {
+            // Example JavaScript to handle filter logic
+            document.getElementById('filtered-content').innerHTML = '<p>Filtered content based on selected filters.</p>';
+        }
     </script>
 </body>
 </html>
