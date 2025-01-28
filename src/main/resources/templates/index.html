@@ -40,24 +40,34 @@
     <main class="container-body my-4">
         <!-- Filter Section -->
         <aside class="filter-section bg-light p-3 mr-3">
-            <h4>Filter</h4>
+            <h4>필터</h4>
             <!-- Add filter controls here -->
-            <p>Filter options will go here.</p>
+            <p>검색조건</p>
             <button class="btn btn-primary btn-sm" onclick="applyFilter()">Apply Filter</button>
         </aside>
 
         <!-- Content Section -->
         <section class="content-section bg-white p-3">
-            <h4>Content</h4>
+            <h4>프로그램</h4>
             <div id="filtered-content">
-                <p>Content based on filter will appear here.</p>
+                <p>업체가 등록한 프로그램을 조회할 수 있는 화면</p>
+            </div>
+            <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">Enable body scrolling</button>
+            <div class="offcanvas offcanvas-start" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasScrollingLabel">예약등록 폼</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <p>TODO : 예약을 할 수 있는 폼 넣을 꺼임.</p>
+                </div>
             </div>
         </section>
 
         <!-- Ad Section -->
         <aside class="ad-section bg-secondary text-white p-3 ml-3">
-            <h4>Advertisements</h4>
-            <p>Ad content will go here.</p>
+            <h4>광고</h4>
+            <p>용도 미정. 광고를 넣으면 좋겠다 판단</p>
         </aside>
     </main>
 
@@ -67,7 +77,7 @@
     <script>
         function applyFilter() {
             // Example JavaScript to handle filter logic
-            document.getElementById('filtered-content').innerHTML = '<p>Filtered content based on selected filters.</p>';
+            document.getElementById('filtered-content').innerHTML = '<p>검색 하였음.</p>';
         }
     </script>
 </body>
