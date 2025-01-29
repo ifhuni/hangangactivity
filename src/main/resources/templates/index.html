@@ -37,7 +37,7 @@
     <!-- 헤더 -->
     <div th:replace="fragments/header.html :: header"></div>
 
-    <main class="container-body my-4">
+    <main id="main-content" class="container-body my-4">
         <!-- Filter Section -->
         <aside class="filter-section bg-light p-3 mr-3">
             <h4>필터</h4>
@@ -68,7 +68,7 @@
         <aside class="ad-section bg-secondary text-white p-3 ml-3">
             <h4>광고</h4>
             <p>용도 미정. 광고를 넣으면 좋겠다 판단</p>
-        </aside>
+        </aside> 
     </main>
 
     <!-- 바텀 -->
@@ -78,6 +78,15 @@
         function applyFilter() {
             // Example JavaScript to handle filter logic
             document.getElementById('filtered-content').innerHTML = '<p>검색 하였음.</p>';
+        }
+
+        function loadContent(url) {
+            fetch(url)  // URL에서 HTML을 가져옴
+                .then(response => response.text()) // 응답을 텍스트(HTML)로 변환
+                .then(html => {
+                    document.getElementById("main-content").innerHTML = html; // 특정 영역에 삽입
+                })
+                .catch(error => console.error('Error loading content:', error));
         }
     </script>
 </body>
