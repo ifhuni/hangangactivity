@@ -46,51 +46,59 @@
             
         </div>
     </div>
-
     <!-- 네비게이션 바 -->
     <div style="background-color: #ffffff;">
-        <div class="container" style="max-width: 1200px; margin: 0 auto;">
+        <div class="container" style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
             <nav class="navbar navbar-expand-lg navbar-light">
+                <!-- 햄버거 버튼 추가 -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- 네비게이션 메뉴 -->
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
+                        <a class="nav-link active" href="#" onclick="loadContent('/program/home')">Home</a>
+
                         <!-- 육상 드롭다운 -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="landDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 육상
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="landDropdown">
-                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/land.html')">스포츠 클라이밍</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/land.htm')">스케이트 보드</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/land.htm')">요가</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/land.htm')">승마체험</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/land')">스포츠 클라이밍</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/land')">스케이트 보드</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/land')">요가</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/land')">승마체험</a></li>
                             </ul>
                         </li>
-    
+
                         <!-- 수상 드롭다운 -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="waterDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 수상
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="waterDropdown">
-                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/water.html')">카약</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/water.html')">패들 보드</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/water.html')">윈드서핑</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/water.html')">웨이크 보드</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/water.html')">요트</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/water')">카약</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/water')">패들 보드</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/water')">윈드서핑</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/water')">웨이크 보드</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/water')">요트</a></li>
                             </ul>
                         </li>
-    
+
                         <!-- 항공 드롭다운 -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="airDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 항공
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="airDropdown">
-                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/air.html')">경비행기 체험</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/air.html')">헬리콥터 체험</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/air')">경비행기 체험</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="loadContent('/program/air')">헬리콥터 체험</a></li>
                             </ul>
                         </li>
-    
+
                         <!-- 렌탈 드롭다운 -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="rentalDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -105,4 +113,6 @@
             </nav>
         </div>
     </div>
+
+
 </header>
