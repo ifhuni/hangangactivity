@@ -18,3 +18,10 @@ OS별 명령어 차이를 고려하세요.
 - **Windows**  
   ```sh
   .\gradlew build
+- **macOS/Linux**  
+  ```sh
+  ./gradlew build
+### (2) Docker Containers 생성
+```sh
+  docker-compose up -d
+
