@@ -31,3 +31,12 @@ create trigger trigger_update_modified before
 update
     on
     public.company for each row execute function update_modified_column();
+
+CREATE TABLE public.users (
+	id serial4 NOT NULL,
+	username varchar(50) NOT NULL,
+	"password" varchar(255) NOT NULL,
+	email varchar(255) NULL,
+	CONSTRAINT users_pkey PRIMARY KEY (id),
+	CONSTRAINT users_username_key UNIQUE (username)
+);
