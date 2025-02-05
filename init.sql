@@ -40,3 +40,17 @@ CREATE TABLE public.users (
 	CONSTRAINT users_pkey PRIMARY KEY (id),
 	CONSTRAINT users_username_key UNIQUE (username)
 );
+
+CREATE TABLE public.program (
+    id bigserial NOT NULL,
+    company_id bigint NOT NULL,
+    "name" varchar(255) NOT NULL,
+    description text NULL,
+    start_date date NULL,
+    end_date date NULL,
+    status varchar(20) DEFAULT 'ACTIVE'::character varying NULL,
+    created_at timestamp DEFAULT now() NULL,
+    updated_at timestamp DEFAULT now() NULL,
+    CONSTRAINT program_pkey PRIMARY KEY (id),
+    CONSTRAINT program_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.company (id) ON DELETE CASCADE
+);
