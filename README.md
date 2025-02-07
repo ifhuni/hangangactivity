@@ -24,4 +24,5 @@ OS별 명령어 차이를 고려하세요.
 ### (2) Docker Containers 생성
 ```sh
   docker-compose up -d
-
+```
+ docker ps
