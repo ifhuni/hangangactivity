@@ -12,6 +12,6 @@ public class CompanyController {
     @GetMapping({"", "/"})
     public String index(Model model) {
         model.addAttribute("message", "Welcome to Thymeleaf!");
-        return "company";
+        return "company/login";
     }
 }
