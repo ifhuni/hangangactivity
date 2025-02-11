@@ -1,31 +1,39 @@
 package com.climbers.hangangactivity.service;
 
-import com.climbers.hangangactivity.model.User;
-import com.climbers.hangangactivity.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.climbers.hangangactivity.mapper.UserMapper;
+import com.climbers.hangangactivity.model.User;
 
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    @Autowired
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+    public UserService(UserMapper userMapper, BCryptPasswordEncoder passwordEncoder) {
+        this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void registerUser(String email, String password, String name, String phone, String role) {
-        // 비밀번호 암호화
-        String encodedPassword = passwordEncoder.encode(password);
+    @Transactional
+    public void registerUser(String email, String password) {
+        // 이메일 중복 체크
+        if (userMapper.findByEmail(email) != null) {
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+        }
 
-        // 사용자 객체 생성
-        User user = new User(email, encodedPassword, name, phone, role);
+        // 비밀번호 암호화
+        String hashedPassword = passwordEncoder.encode(password);
 
         // 사용자 저장
-        userRepository.save(user);
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(hashedPassword);
+
+        userMapper.insertUser(user);
     }
 }
+
