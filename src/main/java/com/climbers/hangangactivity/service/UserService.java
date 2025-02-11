@@ -1,37 +1,31 @@
 package com.climbers.hangangactivity.service;
 
-import org.springframework.stereotype.Service;
-
-import com.climbers.hangangactivity.mapper.UserMapper;
 import com.climbers.hangangactivity.model.User;
-
-import java.util.List;
+import com.climbers.hangangactivity.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
-    private final UserMapper userMapper;
 
-    public UserService(UserMapper userMapper) {
-        this.userMapper = userMapper;
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public User getUserById(Integer id) {
-        return userMapper.findById(id);
-    }
+    public void registerUser(String email, String password, String name, String phone, String role) {
+        // 비밀번호 암호화
+        String encodedPassword = passwordEncoder.encode(password);
 
-    public List<User> getAllUsers() {
-        return userMapper.findAll();
-    }
+        // 사용자 객체 생성
+        User user = new User(email, encodedPassword, name, phone, role);
 
-    public void createUser(User user) {
-        userMapper.insert(user);
-    }
-
-    public void updateUser(User user) {
-        userMapper.update(user);
-    }
-
-    public void deleteUser(Integer id) {
-        userMapper.delete(id);
+        // 사용자 저장
+        userRepository.save(user);
     }
 }
