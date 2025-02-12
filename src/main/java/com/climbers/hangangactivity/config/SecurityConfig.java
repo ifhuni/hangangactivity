@@ -23,6 +23,7 @@ public class SecurityConfig {
             .authorizeHttpRequests() 
                 .requestMatchers("/css/**", "/js/**", "/images/**","/scss/**","/vendor/**").permitAll()  // 정적 리소스는 인증 없이 허용
                 .requestMatchers("/company/register").permitAll()   // 회원가입 페이지는 누구나 접근 가능
+                .requestMatchers("/company/login").permitAll()   // 회원가입 페이지는 누구나 접근 가능
                 .requestMatchers("/company/**").authenticated()     // /company/** 경로는 인증된 사용자만 접근
                 .requestMatchers("/user/**").permitAll()            // /user/** 경로는 누구나 접근 가능
                 .anyRequest().permitAll()                                       // 나머지 경로는 모두 허용
