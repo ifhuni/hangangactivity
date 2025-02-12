@@ -1,6 +1,6 @@
 package com.climbers.hangangactivity.service;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,9 +11,10 @@ import com.climbers.hangangactivity.model.User;
 public class UserService {
 
     private final UserMapper userMapper;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;  // PasswordEncoder로 변경
 
-    public UserService(UserMapper userMapper, BCryptPasswordEncoder passwordEncoder) {
+    // 의존성 주입
+    public UserService(UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
     }
@@ -26,7 +27,7 @@ public class UserService {
         }
 
         // 비밀번호 암호화
-        String hashedPassword = passwordEncoder.encode(password);
+        String hashedPassword = passwordEncoder.encode(password);  // PasswordEncoder 사용
 
         // 사용자 저장
         User user = new User();
@@ -36,4 +37,3 @@ public class UserService {
         userMapper.insertUser(user);
     }
 }
-
