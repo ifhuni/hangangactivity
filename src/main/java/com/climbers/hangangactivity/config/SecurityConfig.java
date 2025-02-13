@@ -20,13 +20,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests() 
-                .requestMatchers("/css/**", "/js/**", "/images/**","/scss/**","/vendor/**").permitAll()  // 정적 리소스는 인증 없이 허용
-                .requestMatchers("/company/register").permitAll()   // 회원가입 페이지는 누구나 접근 가능
-                .requestMatchers("/company/login").permitAll()   // 회원가입 페이지는 누구나 접근 가능
-                .requestMatchers("/company/**").authenticated()     // /company/** 경로는 인증된 사용자만 접근
-                .requestMatchers("/user/**").permitAll()            // /user/** 경로는 누구나 접근 가능
-                .anyRequest().permitAll()                                       // 나머지 경로는 모두 허용
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/scss/**", "/vendor/**").permitAll()
+                .requestMatchers("/api/register").permitAll()
+                .requestMatchers("/api/login").permitAll()
+                .anyRequest().permitAll()                                 // 나머지 경로는 모두 허용
             .and()
             .formLogin()
                 .loginPage("/company/login")                          // 로그인 페이지를 /company/login으로 설정
