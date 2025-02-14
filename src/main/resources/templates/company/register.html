@@ -48,6 +48,23 @@
                                             placeholder="Repeat Password" required>
                                     </div>
                                 </div>
+                                <!-- Bootstrap Modal -->
+                                <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="registerModalLabel">알림</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body" id="registerModalMessage">
+                                                <!-- 메시지가 동적으로 들어갑니다 -->
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-primary" id="registerModalBtn">확인</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <button type="submit" class="btn btn-primary btn-user btn-block">회원가입</button>
                             </form>
                             <hr>
@@ -55,13 +72,14 @@
                                 <a class="small" href="forgot-password.html">비밀번호를 잃어버리셨나요?</a>
                             </div>
                             <div class="text-center">
-                                <a class="small" href="/company">이미 계정이 있나요? 로그인하세요!</a>
+                                <a class="small" href="/company/login">이미 계정이 있나요? 로그인하세요!</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        
 
     </div>
 
@@ -73,7 +91,7 @@
     <script src="/vendor/jquery-easing/jquery.easing.min.js"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="/js/sb-admin-2.min.js"></script>
+    <script src="/js/sb-admin-2.min.js"></script> 
     <script>
         document.getElementById("registerForm").addEventListener("submit", async function(event) {
             event.preventDefault(); // 기본 폼 제출 방지
@@ -98,6 +116,12 @@
             }
 
             const requestBody = { email, password };
+
+            const registerModalElement = document.getElementById("registerModal");
+            const registerModalMessage = document.getElementById("registerModalMessage");
+            const registerModalBtn = document.getElementById("registerModalBtn");
+            const registerModal = new bootstrap.Modal(registerModalElement);
+
             try {
                 const response = await fetch("/api/register", {
                     method: "POST",
@@ -107,17 +131,23 @@
                     body: JSON.stringify(requestBody)
                 });
 
-                const result = await response.json();
+                const isJson = response.headers.get("content-type")?.includes("application/json");
+                const result = isJson ? await response.json() : { message: "서버에서 예상치 못한 응답이 왔습니다." };
 
                 if (response.ok) {
-                    alert("회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.");
-                    window.location.href = "login.html";
+                    registerModalMessage.innerHTML = "회원가입이 완료되었습니다.<br>로그인 페이지로 이동합니다.";
+                    registerModalBtn.onclick = () => window.location.href = "login";
                 } else {
-                    alert(result.message || "회원가입에 실패했습니다.");
+                    registerModalMessage.innerHTML = result.message || "회원가입에 실패했습니다.";
+                    registerModalBtn.onclick = () => registerModal.hide();
                 }
+
+                registerModal.show();
             } catch (error) {
                 console.error("회원가입 오류:", error);
-                alert("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+                registerModalMessage.innerHTML = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+                registerModalBtn.onclick = () => registerModal.hide();
+                registerModal.show();
             }
         });
 
@@ -125,6 +155,7 @@
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailPattern.test(email);
         }
+
     </script>
 </body>
 

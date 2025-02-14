@@ -21,14 +21,14 @@ CREATE TABLE public.users (
 	id serial4 NOT NULL,
 	email varchar(255) NOT NULL,
 	"password" varchar(255) NOT NULL,
-	"name" varchar(255) NOT NULL,
+	"name" varchar(255) NULL,
 	phone varchar(50) NULL,
-	"role" varchar(10) NOT NULL,
+	"role" varchar(10) NULL,
 	company_id int4 NULL,
 	created_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
 	CONSTRAINT users_email_key UNIQUE (email),
 	CONSTRAINT users_pkey PRIMARY KEY (id),
-	CONSTRAINT users_role_check CHECK (((role)::text = ANY ((ARRAY['TOURIST'::character varying, 'COMPANY'::character varying, 'ADMIN'::character varying])::text[]))),
+	CONSTRAINT users_role_check CHECK (((role)::text = ANY (ARRAY[('TOURIST'::character varying)::text, ('COMPANY'::character varying)::text, ('ADMIN'::character varying)::text]))),
 	CONSTRAINT users_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.company(id) ON DELETE SET NULL
 );
 

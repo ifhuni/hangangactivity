@@ -2,13 +2,12 @@ package com.climbers.hangangactivity.controller.api;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import com.climbers.hangangactivity.model.User;
+import com.climbers.hangangactivity.model.UserResponse;
 import com.climbers.hangangactivity.service.UserService;
 
 @RestController
@@ -23,18 +22,24 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public String registerUser(@RequestBody User request) {
+    public ResponseEntity<UserResponse> registerUser(@RequestBody User request) {
         String email = request.getEmail();
         String password = request.getPassword();
-        logger.debug("[controller] email : " + email);
-        logger.debug("[controller] password : " + password);
+        logger.info("회원가입 요청 - email: {}", email);
+
         try {
             // 비즈니스 로직 호출
             userService.registerUser(email, password);
-            return "redirect:/company/login";  // 성공적으로 등록된 경우 로그인 페이지로 리다이렉트
+            
+            // 성공 응답 반환
+            UserResponse response = new UserResponse(true, "회원가입이 성공적으로 완료되었습니다.");
+            return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            // 에러 메시지 전달
-            return "redirect:/company/register?error=" + e.getMessage();
+            logger.error("회원가입 실패 - email: {}, error: {}", email, e.getMessage());
+            
+            // 에러 응답 반환
+            UserResponse response = new UserResponse(false, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 }
