@@ -44,8 +44,12 @@ public class UserService {
         userMapper.insertUser(user);
     }
 
-    public User authenticate(String email, String password) {
-        // TODO Auto-generated method stub
-        return userMapper.findByEmailAndPassword(email, password);
+    public User authenticate(String email, String rawPassword) {
+        User user = userMapper.findByEmail(email);
+
+        if (user != null && passwordEncoder.matches(rawPassword, user.getPassword())) {
+            return user; // 비밀번호 일치
+        }
+        return null; // 로그인 실패
     }
 }

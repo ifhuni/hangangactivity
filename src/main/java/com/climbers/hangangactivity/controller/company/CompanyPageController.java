@@ -30,4 +30,12 @@ public class CompanyPageController {
         logger.info("Accessing company register page");
         return "company/register";  // 회원가입 페이지 템플릿 반환
     }
+
+    /**
+     * 업체 index.html을 보여줍니다.
+     */
+    @GetMapping("/company/index")
+    public String companyIndex() {
+        return "company/index"; // company/index.html 템플릿 반환
+    }
 }
