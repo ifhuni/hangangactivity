@@ -21,8 +21,17 @@ OS별 명령어 차이를 고려하세요.
 - **macOS/Linux**  
   ```sh
   ./gradlew build
-### (2) Docker Containers 생성
-```sh
+### (2) Docker 명령어어
+도커(DOcker)가 실행중인지 확인합니다.
+- **실행중인지 확인**  
+  ```sh
+  docker ps -a
+- **이미지(images) 및 컨테이너(Containers)생성**  
+  ```sh
   docker-compose up -d
-```sh
-  docker ps
+- **컨테이너(Containers) 삭제**  
+  ```sh
+  docker rm [컨테이너 ID 또는 이름]
+- **이미지(Images) 삭제**  
+  ```sh
+  docker rmi [컨테이너 ID 또는 이름]
