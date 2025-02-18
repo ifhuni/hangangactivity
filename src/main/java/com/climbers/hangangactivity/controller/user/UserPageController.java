@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class UserPageController {
 
- private static final Logger logger = LoggerFactory.getLogger(UserPageController.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserPageController.class);
 
     @GetMapping("/")
     public String showUserIndexPage() {
         logger.debug("showUserIndexPage");
-        return "user/index"; 
+        return "user/index";
     }
 }

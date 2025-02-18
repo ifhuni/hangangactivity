@@ -12,14 +12,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class CompanyPageController {
 
     private static final Logger logger = LoggerFactory.getLogger(CompanyPageController.class);
-    
+
     /**
      * 회사 로그인 페이지를 보여줍니다.
      */
     @GetMapping("/company/login")
     public String showCompanyLoginPage() {
+        System.out.println("company/login 접근 : ");
         logger.info("Accessing company login page");
-        return "company/login";  // 회사 로그인 페이지 템플릿 반환
+        return "company/login"; // 회사 로그인 페이지 템플릿 반환
     }
 
     /**
@@ -27,8 +28,9 @@ public class CompanyPageController {
      */
     @GetMapping("company/register")
     public String showRegisterPage() {
+        System.out.println("company/register 접근 : ");
         logger.info("Accessing company register page");
-        return "company/register";  // 회원가입 페이지 템플릿 반환
+        return "company/register"; // 회원가입 페이지 템플릿 반환
     }
 
     /**
@@ -36,6 +38,7 @@ public class CompanyPageController {
      */
     @GetMapping("/company/index")
     public String companyIndex() {
+        System.out.println("company/index 접근 : ");
         return "company/index"; // company/index.html 템플릿 반환
     }
 }

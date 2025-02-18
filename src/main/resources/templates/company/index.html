@@ -755,55 +755,71 @@
     <script src="/js/demo/chart-area-demo.js"></script>
     <script src="/js/demo/chart-pie-demo.js"></script>
     <script>
-        // 로그인 상태 확인
-        fetch("/api/check-session")
-        .then(response => response.json())
-        .then(data => {
-            if (!data.loggedIn) {
-                console.log("로그인되지 않음");
-                //document.getElementById("userEmail").textContent = "로그인이 필요합니다.";
+        document.addEventListener("DOMContentLoaded", async function () {
+            const token = localStorage.getItem("jwtToken"); // 저장된 JWT 토큰 가져오기
+            console.log(token);
+            if (!token) {
+                alert("로그인이 필요합니다.");
                 window.location.href = "/company/login"; // 로그인 페이지로 이동
-                return; // 로그인되지 않았으면 종료
+                return;
             }
 
-            console.log("로그인됨");
-
-            // 로그인된 경우 사용자 정보 가져오기
-            return fetch("/api/user-info")
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("사용자 정보 불러오기 실패");
+            try {
+                const response = await fetch("/auth/me", {  // 🔥 사용자 정보 가져오는 API 엔드포인트
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`, // JWT 토큰 포함
+                        "Content-Type": "application/json"
                     }
-                    return response.json();
-                })
-                .then(userData => {
-                    document.getElementById("userEmail").textContent = userData.email; // 이메일 표시
                 });
-        })
-        .catch(error => {
-            console.error("사용자 정보 불러오기 실패:", error);
-            document.getElementById("userEmail").textContent = "로그인이 필요합니다.";
+
+                if (!response.ok) {
+                    throw new Error("사용자 정보를 불러올 수 없습니다.");
+                }
+
+                const userData = await response.json(); // JSON 데이터 받기
+                document.getElementById("userEmail").textContent = userData.email; // 이메일 표시
+            } catch (error) {
+                console.error("사용자 정보 로드 오류:", error);
+                alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+                localStorage.removeItem("jwtToken"); // 토큰 삭제
+                window.location.href = "/login.html"; // 로그인 페이지로 이동
+            }
         });
 
-        
+
+        // 로그아웃 버튼 클릭 시 동작
         document.getElementById("logoutButton").addEventListener("click", function() {
-            fetch("/api/logout", { method: "POST" })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert("로그아웃 되었습니다.");
-                    window.location.href = "/company/login"; // 로그인 페이지로 이동
-                    window.location.reload(true); // 강제 새로고침 (캐시 무효화)
-                } else {
-                    alert("로그아웃 실패!");
-                }
-            })
-            .catch(error => {
-                console.error("로그아웃 오류:", error);
-                alert("로그아웃 중 오류가 발생했습니다.");
-            });
+            const token = localStorage.getItem("jwtToken"); // 로컬 스토리지에서 JWT 토큰 가져오기
+            
+            if (token) {
+                // Authorization 헤더에 Bearer {JWT_TOKEN} 형식으로 JWT 토큰 포함
+                fetch("/api/logout", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}` // JWT 토큰을 Authorization 헤더에 포함
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("로그아웃 되었습니다.");
+                        localStorage.removeItem("jwtToken"); // 로컬 스토리지에서 JWT 토큰 삭제
+                        window.location.href = "/company/login"; // 로그인 페이지로 이동
+                    } else {
+                        alert("로그아웃 실패!");
+                    }
+                })
+                .catch(error => {
+                    console.error("로그아웃 오류:", error);
+                    alert("로그아웃 중 오류가 발생했습니다.");
+                });
+            } else {
+                alert("로그인 상태가 아닙니다.");
+            }
         });
     </script>
+    
     
 </body>
 
