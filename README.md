@@ -21,6 +21,9 @@ OS별 명령어 차이를 고려하세요.
 - **macOS/Linux**  
   ```sh
   ./gradlew build
+- **클린 빌드**  
+  ```sh
+  ./gradlew clean build --refresh-dependencies 
 ### (2) Docker 명령어어
 도커(DOcker)가 실행중인지 확인합니다.
 - **실행중인지 확인**  
