@@ -755,7 +755,9 @@
     <script src="/js/demo/chart-area-demo.js"></script>
     <script src="/js/demo/chart-pie-demo.js"></script>
     <script>
+        console.log("1");
         document.addEventListener("DOMContentLoaded", async function () {
+            console.log("2");
             const token = localStorage.getItem("jwtToken"); // 저장된 JWT 토큰 가져오기
             console.log(token);
             if (!token) {

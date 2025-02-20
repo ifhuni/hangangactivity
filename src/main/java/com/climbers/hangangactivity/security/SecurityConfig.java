@@ -29,19 +29,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (JWT 사용 시 필수)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/signup", "/auth/login", "/auth/refresh").permitAll()// 로그인 및 회원가입은 인증 없이
-                        .requestMatchers("/", "/company/login", "/company/register").permitAll() // 로그인 없이 접근 가능
-                        .requestMatchers("/company/index").authenticated() // 로그인 필요
-                        .requestMatchers("/css/**", "/js/**", "/img/**", "/scss/**", "/vendor/**") // 정적 리소스 허용
-                        .permitAll()
-                        .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+            .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (JWT 사용 시 필수)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/auth/signup", "/auth/login", "/auth/refresh").permitAll() // 로그인 및 회원가입은 인증 없이
+                .requestMatchers("/", "/company/login", "/company/register").permitAll() // 로그인 없이 접근 가능
+                .requestMatchers("/company/index").authenticated() // 로그인 필요
+                .requestMatchers("/css/**", "/js/**", "/img/**", "/scss/**", "/vendor/**").permitAll() // 정적 리소스 허용
+                .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+            )
+            .headers(headers -> headers
+                .contentSecurityPolicy(csp -> csp
+                    .policyDirectives("script-src 'self' 'unsafe-inline' 'unsafe-eval'")
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
+
         return http.build();
     }
+
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
