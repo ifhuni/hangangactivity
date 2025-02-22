@@ -38,11 +38,9 @@ public class SecurityConfig {
                 .requestMatchers("/css/**", "/js/**", "/img/**", "/scss/**", "/vendor/**").permitAll() // 정적 리소스 허용
                 .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
             )
-            .headers(headers -> headers
-                .contentSecurityPolicy(csp -> csp
-                    .policyDirectives("script-src 'self' 'unsafe-inline' 'unsafe-eval'")
-                )
-            )
+            .headers(headers -> 
+                headers.contentSecurityPolicy("script-src 'self' 'unsafe-inline' 'unsafe-eval'")
+            ) // ✅ headers() 체이닝 수정
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
 
         return http.build();

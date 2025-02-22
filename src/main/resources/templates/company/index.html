@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -35,7 +34,7 @@
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">SB Admin <sup>2</sup></div>
+                <div class="sidebar-brand-text mx-3">H.Activity</div>
             </a>
 
             <!-- Divider -->
@@ -371,6 +370,7 @@
                         <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
                         <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
                                 class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+                        <button onclick="hoon()">버튼</button>
                     </div>
 
                     <!-- Content Row -->
@@ -756,38 +756,37 @@
     <script src="/js/demo/chart-pie-demo.js"></script>
     <script>
         console.log("1");
-        document.addEventListener("DOMContentLoaded", async function () {
-            console.log("2");
-            const token = localStorage.getItem("jwtToken"); // 저장된 JWT 토큰 가져오기
-            console.log(token);
+        document.addEventListener("DOMContentLoaded", async () => {
+            const token = localStorage.getItem("jwtToken");
             if (!token) {
                 alert("로그인이 필요합니다.");
-                window.location.href = "/company/login"; // 로그인 페이지로 이동
+                window.location.href = "/company/login";
                 return;
             }
 
             try {
-                const response = await fetch("/auth/me", {  // 🔥 사용자 정보 가져오는 API 엔드포인트
+                const response = await fetch("/api/company/index-data", {
                     method: "GET",
                     headers: {
-                        "Authorization": `Bearer ${token}`, // JWT 토큰 포함
+                        "Authorization": `Bearer ${token}`,
                         "Content-Type": "application/json"
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error("사용자 정보를 불러올 수 없습니다.");
+                if (response.status === 403) {
+                    alert("접근 권한이 없습니다.");
+                    window.location.href = "/company/login";
+                    return;
                 }
 
-                const userData = await response.json(); // JSON 데이터 받기
-                document.getElementById("userEmail").textContent = userData.email; // 이메일 표시
+                const data = await response.json();
+                document.getElementById("welcome-message").textContent = `안녕하세요, ${data.username}님!`;
             } catch (error) {
-                console.error("사용자 정보 로드 오류:", error);
-                alert("세션이 만료되었습니다. 다시 로그인해주세요.");
-                localStorage.removeItem("jwtToken"); // 토큰 삭제
-                window.location.href = "/login.html"; // 로그인 페이지로 이동
+                console.error(error);
+                alert("데이터를 불러오는 중 오류 발생");
             }
         });
+
 
 
         // 로그아웃 버튼 클릭 시 동작

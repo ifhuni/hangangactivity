@@ -76,6 +76,7 @@
     <!-- Custom scripts for all pages-->
     <script src="/js/sb-admin-2.min.js"></script>
     <script>
+        console.log("로그인");
         document.getElementById("loginForm").addEventListener("submit", function(event) {
             event.preventDefault(); // 기본 폼 제출 방지
 
@@ -114,7 +115,7 @@
             const token = localStorage.getItem("jwtToken");
             if (!token) {
                 alert("로그인이 필요합니다.");
-                window.location.href = "/login.html"; // 로그인 페이지로 이동
+                window.location.href = "/company/login"; 
                 return;
             }
 
@@ -136,13 +137,17 @@
                     throw new Error("페이지 불러오기 실패");
                 }
 
-                const htmlContent = await response.text(); // HTML 받아오기
-                document.body.innerHTML = htmlContent; // 현재 페이지 변경
-                history.pushState(null, "", "/company/index"); // 🔥 URL 변경 (SPA 방식)
+                const htmlContent = await response.text();
+                document.body.innerHTML = htmlContent;
             } catch (error) {
                 console.error(error);
                 alert("페이지 로드 중 오류 발생!");
             }
+        }
+
+
+        function hoon(){
+            console.log("hoon누름");
         }
     </script>
 </body>
