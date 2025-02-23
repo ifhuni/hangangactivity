@@ -127,7 +127,7 @@
                         "Content-Type": "application/json"
                     }
                 });
-
+                alert(response.status);
                 if (response.status === 403) {
                     alert("접근 권한이 없습니다.");
                     return;
@@ -136,18 +136,13 @@
                 if (!response.ok) {
                     throw new Error("페이지 불러오기 실패");
                 }
-
-                const htmlContent = await response.text();
-                document.body.innerHTML = htmlContent;
+                window.location.href = "/company/index";
+                //const htmlContent = await response.text();
+                //document.body.innerHTML = htmlContent;
             } catch (error) {
                 console.error(error);
                 alert("페이지 로드 중 오류 발생!");
             }
-        }
-
-
-        function hoon(){
-            console.log("hoon누름");
         }
     </script>
 </body>
