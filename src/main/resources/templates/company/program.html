@@ -16,8 +16,10 @@
                         <thead>
                             <tr>
                                 <th>id</th>
-                                <th>name</th>
-                                <th>description</th>
+                                <th>프로그램 이름</th>
+                                <th>시작일</th>
+                                <th>종료일</th>
+                                <th>생성일</th>
                             </tr>
                         </thead>
                         <tbody id="programTableBody">
@@ -30,6 +32,7 @@
 
     </div>
     <script>
+        console.log("program.html 랜더링");
         document.getElementById("fetchPrograms").addEventListener("click", async function() {
             try {
                 const response = await fetch('/api/programs'); // Adjust the URL if necessary
@@ -44,8 +47,10 @@
                     const row = document.createElement("tr");
                     row.innerHTML = `
                         <td>${program.id}</td>
-                        <td>${program.name}</td>
-                        <td>${program.description}</td>
+                        <td>${program.title}</td>
+                        <td>${program.startTime}</td>
+                        <td>${program.endTime}</td>
+                        <td>${program.createdAt}</td>
                     `;
                     tableBody.appendChild(row);
                 });

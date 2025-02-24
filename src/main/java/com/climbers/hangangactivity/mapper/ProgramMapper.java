@@ -12,7 +12,7 @@ import com.climbers.hangangactivity.model.Program;
 
 @Mapper
 public interface ProgramMapper {
-    @Select("SELECT * FROM program")
+    @Select("SELECT * from program pg left join company c on pg.company_id = c.id ")
     List<Program> getPrograms();
 
     @Select("SELECT * FROM program WHERE id = #{id}")

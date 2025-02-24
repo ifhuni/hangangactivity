@@ -819,11 +819,26 @@
              * 컨텐츠를 가져와 동적으로 로드하는 함수
              * @param {string} url 가져올 컨텐츠의 URL
              */
-            function fetchContent(url) {
+             function fetchContent(url) {
                 fetch(url, { method: "GET" })
                     .then(response => response.text())
                     .then(data => {
-                        container.innerHTML = data;
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(data, "text/html");
+
+                        // 컨텐츠 변경
+                        container.innerHTML = doc.body.innerHTML;
+
+                        // 스크립트 실행
+                        doc.querySelectorAll("script").forEach(script => {
+                            const newScript = document.createElement("script");
+                            if (script.src) {
+                                newScript.src = script.src;
+                            } else {
+                                newScript.textContent = script.textContent;
+                            }
+                            document.body.appendChild(newScript);
+                        });
                     })
                     .catch(error => console.error(`Error loading content from ${url}:`, error));
             }
