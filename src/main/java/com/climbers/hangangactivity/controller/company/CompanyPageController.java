@@ -38,4 +38,12 @@ public class CompanyPageController {
     public String companyIndex() {
         return "company/index"; // company/index.html 템플릿 반환
     }
+
+    /**
+     * 업체 index.html을 보여줍니다.
+     */
+    @GetMapping("/company/tables")
+    public String companyTables() {
+        return "company/tables"; // company/index.html 템플릿 반환
+    }
 }
