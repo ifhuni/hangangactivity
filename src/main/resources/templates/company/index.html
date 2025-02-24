@@ -128,7 +128,7 @@
 
             <!-- Nav Item - Tables -->
             <li class="nav-item">
-                <a class="nav-link" href="tables.html">
+                <a class="nav-link" href="#" id="loadTables">
                     <i class="fas fa-fw fa-table"></i>
                     <span>Tables</span></a>
             </li>
@@ -823,6 +823,16 @@
             } else {
                 alert("로그인 상태가 아닙니다.");
             }
+        });
+
+        document.getElementById("loadTables").addEventListener("click", function (e) {
+            e.preventDefault();
+            fetch("/company/tables", { method: "GET" })
+                .then(response => response.text())
+                .then(data => {
+                    document.querySelector(".container-fluid").innerHTML = data;
+                })
+                .catch(error => console.error("Error loading content:", error));
         });
     </script>
     
