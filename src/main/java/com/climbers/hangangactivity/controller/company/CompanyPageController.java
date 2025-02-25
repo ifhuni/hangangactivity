@@ -43,7 +43,39 @@ public class CompanyPageController {
      * 업체 index.html을 보여줍니다.
      */
     @GetMapping("/company/tables")
-    public String companyTables() {
+    public String tablesTables() {
         return "company/tables"; // company/index.html 템플릿 반환
+    }
+
+    /**
+     * 프로그램 index.html을 보여줍니다.
+     */
+    @GetMapping("/company/program")
+    public String programTables() {
+        return "company/program"; // company/index.html 템플릿 반환
+    }
+    
+    /**
+     * 예약 index.html을 보여줍니다.
+     */
+    @GetMapping("/company/reservation")
+    public String reservationTables() {
+        return "company/reservation"; // company/index.html 템플릿 반환
+    }
+    
+    /**
+     * 재고 index.html을 보여줍니다.
+     */
+    @GetMapping("/company/inventory")
+    public String inventoryTables() {
+        return "company/inventory"; // company/index.html 템플릿 반환
+    }
+    
+    /**
+     * 휴무일 index.html을 보여줍니다.
+     */
+    @GetMapping("/company/holidays")
+    public String holidaysTables() {
+        return "company/holidays"; // company/index.html 템플릿 반환
     }
 }

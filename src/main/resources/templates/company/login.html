@@ -92,7 +92,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert("로그인 성공!");
+                    //alert("로그인 성공!");
                     window.location.href = "/company/index"; // 로그인 성공 시 이동
                 } else {
                     alert("로그인 실패: " + data.message);

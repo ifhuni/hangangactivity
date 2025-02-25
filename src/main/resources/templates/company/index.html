@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>SB Admin 2 - Dashboard</title>
+    <title>H.Activity</title>
 
     <!-- Custom fonts for this template-->
     <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -20,6 +20,8 @@
     <!-- Custom styles for this template-->
     <link href="/css/sb-admin-2.min.css" rel="stylesheet">
 
+    
+    <link href="/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
 </head>
 
 <body id="page-top">
@@ -31,11 +33,11 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/company/index">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">SB Admin <sup>2</sup></div>
+                <div class="sidebar-brand-text mx-3">H.Activity<sup>업체</sup></div>
             </a>
 
             <!-- Divider -->
@@ -43,9 +45,9 @@
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="/company/index">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
+                    <span>업체 현황</span></a>
             </li>
 
             <!-- Divider -->
@@ -53,9 +55,23 @@
 
             <!-- Heading -->
             <div class="sidebar-heading">
-                Interface
+                프로그램(program)
             </div>
 
+            <!-- Nav Item - Tables -->
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-url="/company/program">
+                    <i class="fas fa-fw fa-table"></i>
+                    <span>프로그램 목록</span></a>
+            </li>
+
+            <!-- Nav Item - Tables -->
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-url="/company/reservation">
+                    <i class="fas fa-fw fa-table"></i>
+                    <span>예약 목록</span></a>
+            </li>
+            
             <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
@@ -96,42 +112,20 @@
 
             <!-- Heading -->
             <div class="sidebar-heading">
-                Addons
+                업체 설정(Setting)
             </div>
-
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
-                    aria-expanded="true" aria-controls="collapsePages">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Pages</span>
-                </a>
-                <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Login Screens:</h6>
-                        <a class="collapse-item" href="login.html">Login</a>
-                        <a class="collapse-item" href="register.html">Register</a>
-                        <a class="collapse-item" href="forgot-password.html">Forgot Password</a>
-                        <div class="collapse-divider"></div>
-                        <h6 class="collapse-header">Other Pages:</h6>
-                        <a class="collapse-item" href="404.html">404 Page</a>
-                        <a class="collapse-item" href="blank.html">Blank Page</a>
-                    </div>
-                </div>
-            </li>
-
-            <!-- Nav Item - Charts -->
-            <li class="nav-item">
-                <a class="nav-link" href="charts.html">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Charts</span></a>
-            </li>
 
             <!-- Nav Item - Tables -->
             <li class="nav-item">
-                <a class="nav-link" href="#" id="loadTables">
+                <a class="nav-link" href="#" data-url="/company/inventory">
                     <i class="fas fa-fw fa-table"></i>
-                    <span>Tables</span></a>
+                    <span>재고 현황</span></a>
+            </li>
+            <!-- Nav Item - Tables -->
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-url="/company/holidays">
+                    <i class="fas fa-fw fa-table"></i>
+                    <span>휴무일 관리</span></a>
             </li>
 
             <!-- Divider -->
@@ -751,78 +745,105 @@
     <!-- Page level plugins -->
     <script src="/vendor/chart.js/Chart.min.js"></script>
 
+    
+    <!-- Page level plugins -->
+    <script src="/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
     <!-- Page level custom scripts -->
     <script src="/js/demo/chart-area-demo.js"></script>
     <script src="/js/demo/chart-pie-demo.js"></script>
+
+    
+    <!-- Page level custom scripts -->
+    <script src="/js/demo/datatables-demo.js"></script>
     <script>
-        // 로그인 상태 확인
-        fetch("/api/check-session")
-        .then(response => response.json())
-        .then(data => {
-            if (!data.loggedIn) {
-                console.log("로그인되지 않음");
-                //document.getElementById("userEmail").textContent = "로그인이 필요합니다.";
-                window.location.href = "/company/login"; // 로그인 페이지로 이동
-                return; // 로그인되지 않았으면 종료
+        document.addEventListener("DOMContentLoaded", function () {
+            const container = document.querySelector(".container-fluid");
+            const userEmailElement = document.getElementById("userEmail");
+            const logoutButton = document.getElementById("logoutButton");
+
+            /**
+             * 로그인 상태 확인 및 사용자 정보 가져오기
+             */
+            function checkLoginStatus() {
+                fetch("/api/check-session")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.loggedIn) {
+                            console.log("로그인되지 않음");
+                            window.location.href = "/company/login";
+                            return;
+                        }
+
+                        console.log("로그인됨");
+                        return fetch("/api/user-info")
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error("사용자 정보 불러오기 실패");
+                                }
+                                return response.json();
+                            })
+                            .then(userData => {
+                                userEmailElement.textContent = userData.email;
+                            });
+                    })
+                    .catch(error => {
+                        console.error("사용자 정보 불러오기 실패:", error);
+                        userEmailElement.textContent = "로그인이 필요합니다.";
+                    });
             }
 
-            console.log("로그인됨");
+            /**
+             * 로그아웃 기능
+             */
+            function handleLogout() {
+                fetch("/api/logout", { method: "POST" })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert("로그아웃 되었습니다.");
+                            window.location.href = "/company/login";
+                            window.location.reload(true);
+                        } else {
+                            alert("로그아웃 실패!");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("로그아웃 오류:", error);
+                        alert("로그아웃 중 오류가 발생했습니다.");
+                    });
+            }
 
-            // 로그인된 경우 사용자 정보 가져오기
-            return fetch("/api/user-info")
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("사용자 정보 불러오기 실패");
-                    }
-                    return response.json();
-                })
-                .then(userData => {
-                    document.getElementById("userEmail").textContent = userData.email; // 이메일 표시
+            /**
+             * 컨텐츠를 가져와 동적으로 로드하는 함수
+             * @param {string} url 가져올 컨텐츠의 URL
+             */
+            function fetchContent(url) {
+                fetch(url, { method: "GET" })
+                    .then(response => response.text())
+                    .then(data => {
+                        container.innerHTML = data;
+                    })
+                    .catch(error => console.error(`Error loading content from ${url}:`, error));
+            }
+
+            // 로그인 상태 확인 실행
+            checkLoginStatus();
+
+            // 로그아웃 버튼 이벤트 등록
+            logoutButton.addEventListener("click", handleLogout);
+
+            // 메뉴 버튼 이벤트 리스너 동적 추가 (data-url 활용)
+            document.querySelectorAll(".nav-link[data-url]").forEach(button => {
+                button.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const url = this.getAttribute("data-url");
+                    fetchContent(url);
                 });
-        })
-        .catch(error => {
-            console.error("사용자 정보 불러오기 실패:", error);
-            document.getElementById("userEmail").textContent = "로그인이 필요합니다.";
-        });
-
-        
-        document.getElementById("logoutButton").addEventListener("click", function() {
-            fetch("/api/logout", { method: "POST" })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert("로그아웃 되었습니다.");
-                    window.location.href = "/company/login"; // 로그인 페이지로 이동
-                    window.location.reload(true); // 강제 새로고침 (캐시 무효화)
-                } else {
-                    alert("로그아웃 실패!");
-                }
-            })
-            .catch(error => {
-                console.error("로그아웃 오류:", error);
-                alert("로그아웃 중 오류가 발생했습니다.");
             });
         });
 
-        document.getElementById("loadTables").addEventListener("click", function (e) {
-            e.preventDefault();
-            fetch("/company/tables", { method: "GET" })
-                .then(response => response.text())
-                .then(data => {
-                    document.querySelector(".container-fluid").innerHTML = data;
-                })
-                .catch(error => console.error("Error loading content:", error));
-        });
-
-        document.getElementById("loadTables").addEventListener("click", function (e) {
-            e.preventDefault();
-            fetch("/company/tables", { method: "GET" })
-                .then(response => response.text())
-                .then(data => {
-                    document.querySelector(".container-fluid").innerHTML = data;
-                })
-                .catch(error => console.error("Error loading content:", error));
-        });
     </script>
     
 </body>
