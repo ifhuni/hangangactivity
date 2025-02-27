@@ -37,4 +37,4 @@ OS별 명령어 차이를 고려하세요.
   docker rm [컨테이너 ID 또는 이름]
 - **이미지(Images) 삭제**  
   ```sh
-  docker rmi [컨테이너 ID 또는 이름]
+  docker rmi [컨테이너 ID 또는 이름] 
