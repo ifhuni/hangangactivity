@@ -9,3 +9,4 @@ COPY build/libs/hangangactivity-0.0.1-SNAPSHOT.jar app.jar
 
 # 4. 실행 명령어
 CMD ["java", "-jar", "app.jar"]
+ 
