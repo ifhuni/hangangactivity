@@ -2,7 +2,7 @@
     
 ## 1. 기술 스택
 - JAVA 17  
-- PostgreSQL   
+- PostgreSQL    
 - Spring Boot  
 - Git  
 - Docker  
