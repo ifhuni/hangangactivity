@@ -1,0 +1,57 @@
+<!-- fragments/header.html -->
+<nav th:fragment="navbar" class="navbar navbar-expand-lg bg-white fixed-top shadow-sm py-2">
+  <div class="container">
+    <!-- 브랜드 -->
+    <a class="navbar-brand fw-bold text-primary fs-4" href="/">HangangActivity</a>
+
+    <!-- 모바일 메뉴 버튼 -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- 메뉴 항목 -->
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto align-items-center gap-2">
+        <!-- 기본 메뉴 -->
+        <li class="nav-item">
+          <a class="nav-link active fw-semibold" href="/">홈</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link fw-semibold" href="#">예약 확인</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link fw-semibold" href="#">로그인</a>
+        </li>
+
+        <!-- 언어 선택 드롭다운 -->
+        <li class="nav-item dropdown ms-3">
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="langDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="/img/korean.png" width="20" height="20" class="me-1 rounded-circle border"> 한국어
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="langDropdown">
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="?lang=ko">
+                <img src="/img/korean.png" width="20" height="20" class="me-2 rounded-circle"> 한국어
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="?lang=en">
+                <img src="/img/american.PNG" width="20" height="20" class="me-2 rounded-circle"> English
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="?lang=ja">
+                <img src="/img/japan.PNG" width="20" height="20" class="me-2 rounded-circle"> 日本語
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="?lang=zh">
+                <img src="/img/china.PNG" width="20" height="20" class="me-2 rounded-circle"> 中文
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

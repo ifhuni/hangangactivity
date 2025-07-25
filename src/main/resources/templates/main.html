@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>한강활동 예약</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <style>
+    </style>
+</head>
+
+<body>
+    <!-- 상단 고정 네비게이션 -->
+    <div th:replace="fragments/header :: navbar"></div>
+
+    <!-- 동적으로 교체될 콘텐츠 영역 
+    <!--<div id="content" th:replace="fragments/home :: home"></div>-->
+    <div id="content" class="container-main">
+        <!-- Initial content will be loaded here by JavaScript -->
+    </div>
+</body>
+<script>
+    // public/js/main.js
+    function loadPage(event, url) {
+        event.preventDefault(); // 기본 링크 이동 방지
+
+        fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error('페이지를 불러오는 데 실패했습니다.');
+                return res.text();
+            })
+            .then(html => {
+                const contentDiv = document.getElementById('content');
+                if (contentDiv) {
+                    contentDiv.innerHTML = html;
+                } else {
+                    console.error('id="content" 요소가 없습니다.');
+                }
+            })
+            .catch(err => {
+                alert('페이지 로딩 오류: ' + err.message);
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadPage(event, '/fragments/home');
+    });
+
+    document.getElementById('sendCodeBtn').addEventListener('click', function () {
+        const email = document.getElementById('email').value;
+        if (!email) return alert("이메일을 입력하세요.");
+
+        // 1. 서버에 이메일 인증 요청 (fetch 또는 AJAX)
+        alert("인증코드를 이메일로 전송했습니다."); // 실제 전송 여부는 서버에 따라 다름
+    });
+
+    // 폼 제출 처리 예시
+    document.getElementById('reservationForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const name = document.getElementById('name').value;
+        const passport = document.getElementById('passport').value;
+        const email = document.getElementById('email').value;
+        const emailCode = document.getElementById('emailCode').value;
+
+        // TODO: 인증코드 확인 + 서버 전송
+        console.log({ name, passport, email, emailCode });
+
+        alert("예약이 완료되었습니다!");
+        const modal = bootstrap.Modal.getInstance(document.getElementById('reservationModal'));
+        modal.hide();
+    });
+</script>
+
+</html>

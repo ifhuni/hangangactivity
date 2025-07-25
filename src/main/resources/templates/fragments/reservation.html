@@ -1,0 +1,171 @@
+<!-- fragments/reservation.html -->
+<div th:fragment="reservation" style="background-color:#0d6efd">
+    <div class="container-fluid mt-5">
+        <div class="row">
+
+            <!-- 좌측 여백 + 검색조건 -->
+            <div class="col-xl-3 col-lg-4 mb-4">
+                <div class="position-sticky" style="top: 100px;">
+                    <div class="card shadow-sm p-3">
+                        <h5 class="mb-3">검색 조건</h5>
+
+                        <!-- 지역구 -->
+                        <div class="mb-3">
+                            <label class="form-label d-block">지역구</label>
+                            <div class="btn-group flex-wrap d-flex gap-2">
+                                <button class="btn btn-outline-secondary btn-sm">전체</button>
+                                <button class="btn btn-outline-secondary btn-sm">광진구</button>
+                                <button class="btn btn-outline-secondary btn-sm">강남구</button>
+                                <button class="btn btn-outline-secondary btn-sm">동작구</button>
+                            </div>
+                        </div>
+
+                        <!-- 날짜 -->
+                        <div class="mb-3">
+                            <label class="form-label">날짜</label>
+                            <input type="date" class="form-control form-control-sm">
+                        </div>
+
+                        <!-- 시간 -->
+                        <div class="mb-3">
+                            <label class="form-label d-block">시간대</label>
+                            <div class="btn-group flex-wrap d-flex gap-2">
+                                <button class="btn btn-outline-secondary btn-sm">오전</button>
+                                <button class="btn btn-outline-secondary btn-sm">오후</button>
+                                <button class="btn btn-outline-secondary btn-sm">야간</button>
+                            </div>
+                        </div>
+
+                        <!-- 유형 -->
+                        <div class="mb-3">
+                            <label class="form-label d-block">활동유형</label>
+                            <div class="btn-group flex-wrap d-flex gap-2">
+                                <button class="btn btn-outline-secondary btn-sm">육상</button>
+                                <button class="btn btn-outline-secondary btn-sm">수상</button>
+                                <button class="btn btn-outline-secondary btn-sm">공중</button>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button class="btn btn-primary btn-sm">검색</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 중앙 리스트 영역 -->
+            <div class="col-xl-6 col-lg-7 px-3">
+                <section class="bg-light rounded-4 shadow-sm px-4 py-4"
+                    style="height: calc(100vh - 100px); display: flex; flex-direction: column; margin-top: 50px;">
+
+
+                    <!-- 타이틀 -->
+                    <div
+                        style="flex: 0 0 auto; position: sticky; top: 0; background: #ffffff; padding-top: 10px; padding-bottom: 10px; z-index: 10; border-bottom: 1px solid #dee2e6;">
+                        <h4 class="fw-bold mb-0">예약 가능한 활동</h4>
+                    </div>
+
+                    <!-- 예약 리스트 -->
+                    <div style="flex: 1 1 auto; overflow-y: auto; margin-top: 10px;">
+                        <div class="row g-3">
+
+                            <!-- 예약 카드 예시 -->
+                            <div class="col-12">
+                                <div class="card border-0 shadow-sm rounded-3 p-2" style="background-color: #ffffff;">
+                                    <div class="row g-0 align-items-center">
+
+                                        <!-- 이미지 -->
+                                        <div class="col-auto">
+                                            <img src="/img/climb_1.jpg" alt="활동 이미지" class="rounded-2"
+                                                style="width: 80px; height: 80px; object-fit: cover;">
+                                        </div>
+
+                                        <!-- 텍스트 정보 -->
+                                        <div class="col px-3">
+                                            <h6 class="mb-1 fw-semibold">피의 오락</h6>
+                                            <div class="small text-muted d-flex flex-wrap gap-3">
+                                                <span><strong>종류:</strong> 수상</span>
+                                                <span><strong>위치:</strong> 광진구</span>
+                                                <span><strong>날짜:</strong> 2025-08-15</span>
+                                                <span><strong>시간:</strong> 오후 2시 ~ 4시</span>
+                                                <span><strong>가격:</strong> 20,000원</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- 버튼 -->
+                                        <div class="col-auto">
+                                            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#reservationModal">예약</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 여기 추가 카드들... -->
+
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+
+
+            <!-- 우측 여백 -->
+            <div class="col-xl-3 d-none d-xl-block"></div>
+
+            <!-- 예약 모달 -->
+            <div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="reservationModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content rounded-4">
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold" id="reservationModalLabel">예약하기</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="reservationForm">
+                                <!-- 이름 -->
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">이름</label>
+                                    <input type="text" class="form-control" id="name" required>
+                                </div>
+
+                                <!-- 여권번호 -->
+                                <div class="mb-3">
+                                    <label for="passport" class="form-label">여권번호</label>
+                                    <input type="text" class="form-control" id="passport" required>
+                                </div>
+
+                                <!-- 이메일 -->
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">이메일</label>
+                                    <div class="input-group">
+                                        <input type="email" class="form-control" id="email" required>
+                                        <button type="button" class="btn btn-outline-secondary" id="sendCodeBtn">인증코드
+                                            전송</button>
+                                    </div>
+                                </div>
+
+                                <!-- 인증코드 -->
+                                <div class="mb-3">
+                                    <label for="emailCode" class="form-label">인증코드</label>
+                                    <input type="text" class="form-control" id="emailCode" required>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                            <button type="submit" form="reservationForm" class="btn btn-primary">예약 완료</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<style>
+    .list-group-item:hover {
+        background-color: #eef4ff !important;
+    }
+</style>
