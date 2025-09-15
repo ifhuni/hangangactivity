@@ -29,12 +29,17 @@
       <if test="region != null and region != ''">
         "location" ILIKE CONCAT('%', #{region}, '%')
       </if>
-      <if test="startDate != null">
-        AND activity_date &gt;= #{startDate}
-      </if>
-      <if test="endDate != null">
-        AND activity_date &lt;= #{endDate}
-      </if>
+      <choose>
+        <when test="startDate != null and endDate != null">
+          AND activity_date BETWEEN #{startDate} AND #{endDate}
+        </when>
+        <when test="startDate != null">
+          AND activity_date &gt;= #{startDate}
+        </when>
+        <when test="endDate != null">
+          AND activity_date &lt;= #{endDate}
+        </when>
+      </choose>
       <if test="activityType != null and activityType != ''">
         AND activity_type = #{activityType}
       </if>

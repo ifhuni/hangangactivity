@@ -34,6 +34,7 @@ public class ReservationController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateEnd,
             @RequestParam(value = "activityType", required = false) String activityType
     ) {
+        System.out.println("Filters - Region: " + region + ", Start Date: " + dateStart + ", End Date: " + dateEnd + ", Activity Type: " + activityType);
         model.addAttribute("activities", activityMapper.findByFilter(region, dateStart, dateEnd, activityType));
         return "fragments/reservation :: reservation";
     }
