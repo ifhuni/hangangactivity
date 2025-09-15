@@ -1,0 +1,7 @@
+﻿ DELETE CASCADE,
+	title varchar(150) NOT NULL,
+	description text,
+	"location" varchar(255) NOT NULL,
+	max_participants int4 NOT NULL,
+	created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+	activity_d

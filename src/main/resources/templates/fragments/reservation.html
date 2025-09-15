@@ -68,9 +68,34 @@
                     <!-- 예약 리스트 -->
                     <div style="flex: 1 1 auto; overflow-y: auto; margin-top: 10px;">
                         <div class="row g-3">
+                            <!-- DB 활동 리스트 -->
+                            <div class="col-12" th:if="${#lists.isEmpty(activities)}">
+                                <div class="text-muted text-center py-5">표시할 활동이 없습니다.</div>
+                            </div>
+                            <div class="col-12" th:each="act : ${activities}">
+                                <div class="card border-0 shadow-sm rounded-3 p-2" style="background-color: #ffffff;">
+                                    <div class="row g-0 align-items-center">
+                                        <div class="col-auto">
+                                            <img src="/img/climb_1.jpg" alt="활동 썸네일" class="rounded-2" style="width: 80px; height: 80px; object-fit: cover;">
+                                        </div>
+                                        <div class="col px-3">
+                                            <h6 class="mb-1 fw-semibold" th:text="${act.title}">활동 제목</h6>
+                                            <div class="small text-muted d-flex flex-wrap gap-3">
+                                                <span><strong>위치:</strong> <span th:text="${act.location}">위치</span></span>
+                                                <span><strong>날짜:</strong> <span th:text="${act.activityDate}">2025-08-01</span></span>
+                                                <span><strong>시간:</strong> <span th:text="${act.startTime}">09:00</span> ~ <span th:text="${act.endTime}">10:00</span></span>
+                                                <span><strong>정원:</strong> <span th:text="${act.maxParticipants}">0</span>명</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#reservationModal">예약</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- 예약 카드 예시 -->
-                            <div class="col-12">
+                            <div class="col-12" th:if="${false}">
                                 <div class="card border-0 shadow-sm rounded-3 p-2" style="background-color: #ffffff;">
                                     <div class="row g-0 align-items-center">
 

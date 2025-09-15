@@ -1,0 +1,171 @@
+﻿<!-- fragments/reservation.html -->
+<div th:fragment="reservation" style="background-color:#0d6efd">
+    <div class="container-fluid mt-5">
+        <div class="row">
+
+            <!-- 醫뚯륫 ?щ갚 + 寃?됱“嫄?-->
+            <div class="col-xl-3 col-lg-4 mb-4">
+                <div class="position-sticky" style="top: 100px;">
+                    <div class="card shadow-sm p-3">
+                        <h5 class="mb-3">寃??議곌굔</h5>
+
+                        <!-- 吏??뎄 -->
+                        <div class="mb-3">
+                            <label class="form-label d-block">吏??뎄</label>
+                            <div class="btn-group flex-wrap d-flex gap-2">
+                                <button class="btn btn-outline-secondary btn-sm">?꾩껜</button>
+                                <button class="btn btn-outline-secondary btn-sm">愿묒쭊援?/button>
+                                <button class="btn btn-outline-secondary btn-sm">媛뺣궓援?/button>
+                                <button class="btn btn-outline-secondary btn-sm">?숈옉援?/button>
+                            </div>
+                        </div>
+
+                        <!-- ?좎쭨 -->
+                        <div class="mb-3">
+                            <label class="form-label">?좎쭨</label>
+                            <input type="date" class="form-control form-control-sm">
+                        </div>
+
+                        <!-- ?쒓컙 -->
+                        <div class="mb-3">
+                            <label class="form-label d-block">?쒓컙?</label>
+                            <div class="btn-group flex-wrap d-flex gap-2">
+                                <button class="btn btn-outline-secondary btn-sm">?ㅼ쟾</button>
+                                <button class="btn btn-outline-secondary btn-sm">?ㅽ썑</button>
+                                <button class="btn btn-outline-secondary btn-sm">?쇨컙</button>
+                            </div>
+                        </div>
+
+                        <!-- ?좏삎 -->
+                        <div class="mb-3">
+                            <label class="form-label d-block">?쒕룞?좏삎</label>
+                            <div class="btn-group flex-wrap d-flex gap-2">
+                                <button class="btn btn-outline-secondary btn-sm">?≪긽</button>
+                                <button class="btn btn-outline-secondary btn-sm">?섏긽</button>
+                                <button class="btn btn-outline-secondary btn-sm">怨듭쨷</button>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button class="btn btn-primary btn-sm">寃??/button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 以묒븰 由ъ뒪???곸뿭 -->
+            <div class="col-xl-6 col-lg-7 px-3">
+                <section class="bg-light rounded-4 shadow-sm px-4 py-4"
+                    style="height: calc(100vh - 100px); display: flex; flex-direction: column; margin-top: 50px;">
+
+
+                    <!-- ??댄? -->
+                    <div
+                        style="flex: 0 0 auto; position: sticky; top: 0; background: #ffffff; padding-top: 10px; padding-bottom: 10px; z-index: 10; border-bottom: 1px solid #dee2e6;">
+                        <h4 class="fw-bold mb-0">?덉빟 媛?ν븳 ?쒕룞</h4>
+                    </div>
+
+                    <!-- ?덉빟 由ъ뒪??-->
+                    <div style="flex: 1 1 auto; overflow-y: auto; margin-top: 10px;">
+                        <div class="row g-3">
+
+                            <!-- ?덉빟 移대뱶 ?덉떆 -->
+                            <div class="col-12">
+                                <div class="card border-0 shadow-sm rounded-3 p-2" style="background-color: #ffffff;">
+                                    <div class="row g-0 align-items-center">
+
+                                        <!-- ?대?吏 -->
+                                        <div class="col-auto">
+                                            <img src="/img/climb_1.jpg" alt="?쒕룞 ?대?吏" class="rounded-2"
+                                                style="width: 80px; height: 80px; object-fit: cover;">
+                                        </div>
+
+                                        <!-- ?띿뒪???뺣낫 -->
+                                        <div class="col px-3">
+                                            <h6 class="mb-1 fw-semibold">?쇱쓽 ?ㅻ씫</h6>
+                                            <div class="small text-muted d-flex flex-wrap gap-3">
+                                                <span><strong>醫낅쪟:</strong> ?섏긽</span>
+                                                <span><strong>?꾩튂:</strong> 愿묒쭊援?/span>
+                                                <span><strong>?좎쭨:</strong> 2025-08-15</span>
+                                                <span><strong>?쒓컙:</strong> ?ㅽ썑 2??~ 4??/span>
+                                                <span><strong>媛寃?</strong> 20,000??/span>
+                                            </div>
+                                        </div>
+
+                                        <!-- 踰꾪듉 -->
+                                        <div class="col-auto">
+                                            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#reservationModal">?덉빟</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ?ш린 異붽? 移대뱶??.. -->
+
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+
+
+            <!-- ?곗륫 ?щ갚 -->
+            <div class="col-xl-3 d-none d-xl-block"></div>
+
+            <!-- ?덉빟 紐⑤떖 -->
+            <div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="reservationModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content rounded-4">
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold" id="reservationModalLabel">?덉빟?섍린</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="?リ린"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="reservationForm">
+                                <!-- ?대쫫 -->
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">?대쫫</label>
+                                    <input type="text" class="form-control" id="name" required>
+                                </div>
+
+                                <!-- ?ш텒踰덊샇 -->
+                                <div class="mb-3">
+                                    <label for="passport" class="form-label">?ш텒踰덊샇</label>
+                                    <input type="text" class="form-control" id="passport" required>
+                                </div>
+
+                                <!-- ?대찓??-->
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">?대찓??/label>
+                                    <div class="input-group">
+                                        <input type="email" class="form-control" id="email" required>
+                                        <button type="button" class="btn btn-outline-secondary" id="sendCodeBtn">?몄쬆肄붾뱶
+                                            ?꾩넚</button>
+                                    </div>
+                                </div>
+
+                                <!-- ?몄쬆肄붾뱶 -->
+                                <div class="mb-3">
+                                    <label for="emailCode" class="form-label">?몄쬆肄붾뱶</label>
+                                    <input type="text" class="form-control" id="emailCode" required>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">?リ린</button>
+                            <button type="submit" form="reservationForm" class="btn btn-primary">?덉빟 ?꾨즺</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<style>
+    .list-group-item:hover {
+        background-color: #eef4ff !important;
+    }
+</style>

@@ -1,4 +1,4 @@
-﻿<!-- fragments/home.html -->
+<!-- fragments/home.html -->
 <div th:fragment="home">
   <!-- 히어로 섹션 -->
   <section class="hero text-center text-white" style="
@@ -25,21 +25,36 @@
             </select>
           </div>
           <div class="col-md-4">
-            <input type="text" id="dateRangeDisplay" class="form-control" placeholder="날짜 선택" readonly onclick="openDateRangePicker()">
-            <input type="date" id="dateStart" class="d-inline-block" style="position:absolute;opacity:0;width:1px;height:1px;padding:0;margin:0;border:0;">
-            <input type="date" id="dateEnd" class="d-inline-block" style="position:absolute;opacity:0;width:1px;height:1px;padding:0;margin:0;border:0;">
+            <div class="input-group">
+              <input type="date" id="dateStart" class="form-control" placeholder="시작일자">
+              <span class="input-group-text">~</span>
+              <input type="date" id="dateEnd" class="form-control" placeholder="종료일자">
+            </div>  
           </div>
           <div class="col-md-4">
-            <select class="form-select">
-              <option value="" selected>활동 종류</option>
-              <option>클라이밍</option>
-              <option>수영</option>
-              <option>요가</option>
-              <option>러닝</option>
+            <select id="activityType" class="form-select">
+              <option selected>활동 종류</option>
+              <option>육상</option>
+              <option>수상</option>
+              <option>공중</option>
             </select>
           </div>
           <div class="col-12 text-center">
-            <button type="submit" class="btn btn-primary px-5" onclick="(function(e){ e.preventDefault(); var r=document.getElementById('regionSelect')?.value||''; var ds=document.getElementById('dateStart')?.value||''; var de=document.getElementById('dateEnd')?.value||''; var params=[]; if(r) params.push('region='+encodeURIComponent(r)); if(ds) params.push('dateStart='+encodeURIComponent(ds)); if(de) params.push('dateEnd='+encodeURIComponent(de)); var url='/fragments/reservation'+(params.length?('?'+params.join('&')):''); loadPage(e, url); })(event)">검색</button>
+            <button type="submit" class="btn btn-primary px-5" 
+              onclick="(function(e){
+               e.preventDefault(); 
+               var r=document.getElementById('regionSelect')?.value||''; 
+               var ds=document.getElementById('dateStart')?.value||''; 
+               var de=document.getElementById('dateEnd')?.value||''; 
+               var ty=document.getElementById('activityType')?.value||''; 
+               var params=[]; 
+               if(r) params.push('region='+encodeURIComponent(r)); 
+               if(ds) params.push('dateStart='+encodeURIComponent(ds)); 
+               if(de) params.push('dateEnd='+encodeURIComponent(de));
+               if(ty) params.push('activityType='+encodeURIComponent(ty));
+               var url='/fragments/reservation'+(params.length?('?'+params.join('&')):''); 
+               loadPage(e, url); 
+              })(event)">검색</button>
           </div>
         </form>
       </div>

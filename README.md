@@ -16,12 +16,9 @@
 
 2. **Gradle 빌드 (권장)**
    ```
-   ./gradlew build
+   ./gradlew build -x test
    ```
-   Windows에서는 아래 명령어도 가능합니다.
-   ```
-   gradlew.bat build
-   ```
+   
 
 4. **실행**
    빌드가 완료되면 아래 명령어로 실행할 수 있습니다.

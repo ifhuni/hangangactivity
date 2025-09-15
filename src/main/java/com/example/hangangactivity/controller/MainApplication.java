@@ -1,11 +1,13 @@
 package com.example.hangangactivity.controller;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.example.hangangactivity")
+@MapperScan("com.example.hangangactivity.mapper")
 @Controller
 public class MainApplication {
 
@@ -23,8 +25,4 @@ public class MainApplication {
     return "fragments/home :: home";
   }
 
-  @GetMapping("/fragments/reservation")
-  public String reservationFragment() {
-    return "fragments/reservation :: reservation";
-  }
 }

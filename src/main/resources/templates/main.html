@@ -71,33 +71,6 @@
         const modal = bootstrap.Modal.getInstance(document.getElementById('reservationModal'));
         modal.hide();
     });
-
-    // Date range picker for home fragment
-    function openDateRangePicker() {
-        const start = document.getElementById('dateStart');
-        const end = document.getElementById('dateEnd');
-        const display = document.getElementById('dateRangeDisplay');
-        if (!start || !end || !display) return;
-
-        // reset end on new pick
-        end.value = '';
-        end.min = '';
-
-        // start change -> open end picker
-        start.onchange = function () {
-            if (!start.value) return;
-            end.min = start.value;
-            end.onchange = function () {
-                if (start.value && end.value) {
-                    display.value = start.value + ' - ' + end.value;
-                }
-            };
-            // open end picker
-            end.click();
-        };
-        // open start picker
-        start.click();
-    }
 </script>
 
 </html>

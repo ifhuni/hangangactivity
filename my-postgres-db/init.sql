@@ -42,6 +42,7 @@ CREATE TABLE public.activities (
 	title varchar(150) NOT NULL,
 	description text,
 	"location" varchar(255) NOT NULL,
+	activity_type varchar(10) NOT NULL,
 	max_participants int4 NOT NULL,
 	created_at timestamp DEFAULT CURRENT_TIMESTAMP,
 	activity_date date NOT NULL DEFAULT CURRENT_DATE,
@@ -55,6 +56,7 @@ COMMENT ON COLUMN public.activities.company_id IS '회사 ID';
 COMMENT ON COLUMN public.activities.title IS '활동 제목';
 COMMENT ON COLUMN public.activities.description IS '활동 설명';
 COMMENT ON COLUMN public.activities.location IS '활동 장소';
+COMMENT ON COLUMN public.activities.activity_type IS '활동 유형 (육상, 수상, 공중)';
 COMMENT ON COLUMN public.activities.max_participants IS '최대 참여 인원';
 COMMENT ON COLUMN public.activities.created_at IS '생성 타임스탬프';
 COMMENT ON COLUMN public.activities.activity_date IS '활동 날짜';
@@ -145,16 +147,16 @@ VALUES
 ('요가온더리버', '333-44-55555', '김요가', '010-3333-4444', '02-333-4444', '서울시 영등포구 한강대로', true);
 
 -- 액티비티 정보
-INSERT INTO public.activities (company_id, title, description, "location", max_participants, activity_date, start_time, end_time)
+INSERT INTO public.activities (company_id, title, description, "location", activity_type, max_participants, activity_date, start_time, end_time)
 VALUES 
-(1, '실외 암벽등반', '서울 한강로에서 진행되는 실외 암벽등반 프로그램입니다.', '서울 마포구', 20, '2025-08-01', '09:00:00', '10:00:00'),
-(1, '생활체육 실기반', '서울 한강로에서 진행되는 생체실기반 입니다.', '서울 마포구', 20, '2025-08-01', '09:00:00', '10:00:00'),
-(2, '패들보드 체험', '서울 한강 잠실에서 진행되는 패들보드 체험입니다.', '서울 한강 잠실', 20, '2025-08-06', '11:00:00', '12:30:00'),
-(2, '카약 투어', '서울 한강 성산대교에서 진행되는 카약 투어입니다.', '서울 한강 성산대교', 12, '2025-08-07', '13:00:00', '14:30:00'),
-(3, '요가 클래스', '서울 한강 여의도공원에서 진행되는 요가 클래스입니다.', '서울 한강 여의도공원', 25, '2025-08-03', '07:30:00', '08:30:00'),
-(3, '명상 워크숍', '서울 한강 잠실에서 진행되는 명상 워크숍입니다.', '서울 한강 잠실', 30, '2025-08-08', '09:00:00', '10:30:00'),
-(3, '자연 속 요가', '서울 한강 성산대교에서 진행되는 자연 속 요가 클래스입니다.', '서울 한강 성산대교', 20, '2025-08-09', '06:30:00', '07:30:00'),
-(3, '요가와 명상 리트릿', '서울 한강 여의도공원에서 진행되는 요가와 명상 리트릿입니다.', '서울 한강 여의도공원', 15, '2025-08-10', '08:00:00', '10:00:00');
+(1, '실외 암벽등반', '서울 한강로에서 진행되는 실외 암벽등반 프로그램입니다.', '서울 마포구', '육상', 20, '2025-08-01', '09:00:00', '10:00:00'),
+(1, '생활체육 실기반', '서울 한강로에서 진행되는 생체실기반 입니다.', '서울 마포구', '육상', 20, '2025-08-01', '09:00:00', '10:00:00'),
+(2, '패들보드 체험', '서울 한강 잠실에서 진행되는 패들보드 체험입니다.', '서울 한강 잠실', '수상', 20, '2025-08-06', '11:00:00', '12:30:00'),
+(2, '카약 투어', '서울 한강 성산대교에서 진행되는 카약 투어입니다.', '서울 한강 성산대교', '수상', 12, '2025-08-07', '13:00:00', '14:30:00'),
+(3, '요가 클래스', '서울 한강 여의도공원에서 진행되는 요가 클래스입니다.', '서울 한강 여의도공원', '육상', 25, '2025-08-03', '07:30:00', '08:30:00'),
+(3, '명상 워크숍', '서울 한강 잠실에서 진행되는 명상 워크숍입니다.', '서울 한강 잠실', '육상', 30, '2025-08-08', '09:00:00', '10:30:00'),
+(3, '자연 속 요가', '서울 한강 성산대교에서 진행되는 자연 속 요가 클래스입니다.', '서울 한강 성산대교', '육상', 20, '2025-08-09', '06:30:00', '07:30:00'),
+(3, '요가와 명상 리트릿', '서울 한강 여의도공원에서 진행되는 요가와 명상 리트릿입니다.', '서울 한강 여의도공원', '육상', 15, '2025-08-10', '08:00:00', '10:00:00');
 
 -- 관광객 정보
 INSERT INTO public.tourists (name, passport_number, nationality, gender, birthdate, email)

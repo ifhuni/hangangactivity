@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.hangangactivity.mapper.ActivityMapper">
+
+  <select id="findAll" resultType="com.example.hangangactivity.model.Activity">
+    SELECT id, company_id, title, description, "location", max_participants, created_at, activity_date, start_time, end_time
+    FROM public.activities
+    ORDER BY created_at DESC
+  </select>
+
+  <select id="findByRegion" parameterType="string" resultType="com.example.hangangactivity.model.Activity">
+    SELECT id, company_id, title, description, "location", max_participants, created_at, activity_date, start_time, end_time
+    FROM public.activities
+    <where>
+      <if test="region != null and region != ''">
+        "location" ILIKE CONCAT('%', #{region}, '%')
+      </if>
+    </where>
+    ORDER BY created_at DESC
+  </select>
+
+  <select id="findByFilter" resultType="com.example.hangangactivity.model.Activity">
+    SELECT id, company_id, title, description, "location", max_participants, created_at, activity_date, start_time, end_time
+    FROM public.activities
+    <where>
+      <if test="region != null and region != ''">
+        "location" ILIKE CONCAT('%', #{region}, '%')
+      </if>
+      <if test="startDate != null">
+        AND activity_date &gt;= #{startDate}
+      </if>
+      <if test="endDate != null">
+        AND activity_date &lt;= #{endDate}
+      </if>
+      <if test="activityType != null and activityType != ''">
+        AND activity_type = #{activityType}
+      </if>
+    </where>
+    ORDER BY created_at DESC
+  </select>
+
+</mapper>
