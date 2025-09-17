@@ -11,19 +11,17 @@
 </head>
 
 <body>
-    <!-- 상단 고정 네비게이션 -->
+    <!-- 상단 고정 내비게이션 -->
     <div th:replace="~{fragments/header :: navbar}"></div>
 
-    <!-- 동적으로 교체될 콘텐츠 영역 
-    <!--<div id="content" th:replace="fragments/home :: home"></div>-->
-    <div id="content" class="container-main">
-        <!-- Initial content will be loaded here by JavaScript -->
-    </div>
+    <!-- 동적으로 교체될 콘텐츠 영역 -->
+    <div id="content" class="container-main"></div>
 </body>
 <script>
-    // public/js/main.js
-    function loadPage(event, url) {
-        event.preventDefault(); // 기본 링크 이동 방지
+    function loadPage(eventOrNull, url) {
+        if (eventOrNull && typeof eventOrNull.preventDefault === 'function') {
+            eventOrNull.preventDefault();
+        }
 
         fetch(url)
             .then(res => {
@@ -44,33 +42,68 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        loadPage(event, '/fragments/home');
+        loadPage(null, '/fragments/home');
     });
 
-    document.getElementById('sendCodeBtn').addEventListener('click', function () {
-        const email = document.getElementById('email').value;
-        if (!email) return alert("이메일을 입력하세요.");
+    // 동적 콘텐츠 대응: 모달에 선택한 활동정보 채우기
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-bs-target="#reservationModal"][data-activity-id]');
+        if (!btn) return;
 
-        // 1. 서버에 이메일 인증 요청 (fetch 또는 AJAX)
-        alert("인증코드를 이메일로 전송했습니다."); // 실제 전송 여부는 서버에 따라 다름
+        const modalEl = document.getElementById('reservationModal');
+        if (!modalEl) return;
+
+        const title = btn.getAttribute('data-title') || '';
+        const location = btn.getAttribute('data-location') || '';
+        const date = btn.getAttribute('data-date') || '';
+        const start = btn.getAttribute('data-start') || '';
+        const end = btn.getAttribute('data-end') || '';
+        const activityId = btn.getAttribute('data-activity-id') || '';
+        const timeText = (start || end) ? ` (${start || ''}${end ? ' ~ ' + end : ''})` : '';
+
+        const setText = (sel, val) => { const el = modalEl.querySelector(sel); if (el) el.textContent = val; };
+        setText('[data-field="title"]', title);
+        setText('[data-field="location"]', location);
+        setText('[data-field="date"]', date);
+        setText('[data-field="time"]', timeText);
+
+        const hiddenId = modalEl.querySelector('#activityId');
+        if (hiddenId) hiddenId.value = activityId;
     });
 
-    // 폼 제출 처리 예시
-    document.getElementById('reservationForm').addEventListener('submit', function (e) {
+    // 인증코드 전송 (동적 위임)
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('#sendCodeBtn');
+        if (!btn) return;
+        const wrap = btn.closest('.modal') || document;
+        const emailInput = wrap.querySelector('#email');
+        const email = emailInput ? emailInput.value : '';
+        if (!email) return alert('이메일을 입력해주세요.');
+        alert('인증코드를 이메일로 전송했습니다.');
+    });
+
+    // 예약 제출 (동적 위임)
+    document.addEventListener('submit', function (e) {
+        const form = e.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        if (form.id !== 'reservationForm') return;
         e.preventDefault();
 
-        const name = document.getElementById('name').value;
-        const passport = document.getElementById('passport').value;
-        const email = document.getElementById('email').value;
-        const emailCode = document.getElementById('emailCode').value;
+        const modalEl = document.getElementById('reservationModal');
+        const name = form.querySelector('#name')?.value;
+        const passport = form.querySelector('#passport')?.value;
+        const email = form.querySelector('#email')?.value;
+        const emailCode = form.querySelector('#emailCode')?.value;
+        const activityId = form.querySelector('#activityId')?.value;
 
-        // TODO: 인증코드 확인 + 서버 전송
-        console.log({ name, passport, email, emailCode });
-
-        alert("예약이 완료되었습니다!");
-        const modal = bootstrap.Modal.getInstance(document.getElementById('reservationModal'));
-        modal.hide();
+        console.log({ activityId, name, passport, email, emailCode });
+        alert('예약이 완료되었습니다.');
+        if (modalEl) {
+            const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.hide();
+        }
     });
 </script>
 
 </html>
+

@@ -95,13 +95,21 @@
                       </div>
                     </div>
                     <div class="col-auto px-2">
-                      <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#reservationModal">예약</button>
+                      <button class="btn btn-outline-primary btn-sm"
+                        data-bs-toggle="modal" data-bs-target="#reservationModal"
+                        th:attr="
+                          data-activity-id=${act.id},
+                          data-title=${act.title},
+                          data-location=${act.location},
+                          data-date=${act.activityDate},
+                          data-start=${act.startTime},
+                          data-end=${act.endTime}">
+                        예약
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
-
-              <!-- 추가 카드 필요시 여기에 -->
 
             </div>
           </div>
@@ -111,51 +119,8 @@
       <!-- 우측 여백 -->
       <div class="col-xl-3 d-none d-xl-block"></div>
 
-      <!-- 예약 모달 -->
-      <div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="reservationModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content rounded-4">
-            <div class="modal-header">
-              <h5 class="modal-title fw-bold" id="reservationModalLabel">예약하기</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
-            </div>
-            <div class="modal-body">
-              <form id="reservationForm">
-                <!-- 이름 -->
-                <div class="mb-3">
-                  <label for="name" class="form-label">이름</label>
-                  <input type="text" class="form-control" id="name" required>
-                </div>
-
-                <!-- 여권번호 -->
-                <div class="mb-3">
-                  <label for="passport" class="form-label">여권번호</label>
-                  <input type="text" class="form-control" id="passport" required>
-                </div>
-
-                <!-- 이메일 -->
-                <div class="mb-3">
-                  <label for="email" class="form-label">이메일</label>
-                  <div class="input-group">
-                    <input type="email" class="form-control" id="email" required>
-                    <button type="button" class="btn btn-outline-secondary" id="sendCodeBtn">인증코드 전송</button>
-                  </div>
-                </div>
-
-                <!-- 인증코드 -->
-                <div class="mb-3">
-                  <label for="emailCode" class="form-label">인증코드</label>
-                  <input type="text" class="form-control" id="emailCode" required>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-              <button type="submit" form="reservationForm" class="btn btn-primary">예약 완료</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- 예약 모달 (분리된 프래그먼트 포함) -->
+      <div th:replace="~{fragments/reservation-modal :: reservationModal}"></div>
 
     </div>
   </div>

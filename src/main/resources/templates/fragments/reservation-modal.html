@@ -1,0 +1,53 @@
+<!-- fragments/reservation-modal.html -->
+<div th:fragment="reservationModal">
+  <div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="reservationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content rounded-4">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="reservationModalLabel">예약하기</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+        </div>
+        <div class="modal-body">
+          <!-- 선택한 활동 정보 요약 -->
+          <div class="border rounded-3 p-3 mb-3 bg-light small">
+            <div><strong>활동명:</strong> <span data-field="title">-</span></div>
+            <div><strong>위치:</strong> <span data-field="location">-</span></div>
+            <div><strong>일시:</strong> <span data-field="date">-</span> <span data-field="time"></span></div>
+          </div>
+
+          <form id="reservationForm">
+            <input type="hidden" id="activityId" name="activityId" value="">
+
+            <div class="mb-3">
+              <label for="name" class="form-label">이름</label>
+              <input type="text" class="form-control" id="name" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="passport" class="form-label">여권번호</label>
+              <input type="text" class="form-control" id="passport" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="email" class="form-label">이메일</label>
+              <div class="input-group">
+                <input type="email" class="form-control" id="email" required>
+                <button type="button" class="btn btn-outline-secondary" id="sendCodeBtn">인증코드 전송</button>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="emailCode" class="form-label">인증코드</label>
+              <input type="text" class="form-control" id="emailCode" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+          <button type="submit" form="reservationForm" class="btn btn-primary">예약 완료</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
