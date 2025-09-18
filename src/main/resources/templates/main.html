@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
-    <title>한강활동 예약</title>
+    <title>?쒓컯?쒕룞 ?덉빟</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <script src="/js/bootstrap.bundle.min.js"></script>
     <style>
@@ -11,10 +11,10 @@
 </head>
 
 <body>
-    <!-- 상단 고정 내비게이션 -->
+    <!-- ?곷떒 怨좎젙 ?대퉬寃뚯씠??-->
     <div th:replace="~{fragments/header :: navbar}"></div>
 
-    <!-- 동적으로 교체될 콘텐츠 영역 -->
+    <!-- ?숈쟻?쇰줈 援먯껜??肄섑뀗痢??곸뿭 -->
     <div id="content" class="container-main"></div>
 </body>
 <script>
@@ -25,7 +25,7 @@
 
         fetch(url)
             .then(res => {
-                if (!res.ok) throw new Error('페이지를 불러오는 데 실패했습니다.');
+                if (!res.ok) throw new Error('?섏씠吏瑜?遺덈윭?ㅻ뒗 ???ㅽ뙣?덉뒿?덈떎.');
                 return res.text();
             })
             .then(html => {
@@ -33,11 +33,11 @@
                 if (contentDiv) {
                     contentDiv.innerHTML = html;
                 } else {
-                    console.error('id="content" 요소가 없습니다.');
+                    console.error('id="content" ?붿냼媛 ?놁뒿?덈떎.');
                 }
             })
             .catch(err => {
-                alert('페이지 로딩 오류: ' + err.message);
+                alert('?섏씠吏 濡쒕뵫 ?ㅻ쪟: ' + err.message);
             });
     }
 
@@ -45,7 +45,7 @@
         loadPage(null, '/fragments/home');
     });
 
-    // 동적 콘텐츠 대응: 모달에 선택한 활동정보 채우기
+    // ?숈쟻 肄섑뀗痢???? 紐⑤떖???좏깮???쒕룞?뺣낫 梨꾩슦湲?
     document.addEventListener('click', function (e) {
         const btn = e.target.closest('[data-bs-target="#reservationModal"][data-activity-id]');
         if (!btn) return;
@@ -89,19 +89,19 @@
         }
     });
 
-    // 인증코드 전송 (동적 위임)
+    // ?몄쬆肄붾뱶 ?꾩넚 (?숈쟻 ?꾩엫)
     document.addEventListener('click', function (e) {
         const btn = e.target.closest('#sendCodeBtn');
         if (!btn) return;
         const wrap = btn.closest('.modal') || document;
         const emailInput = wrap.querySelector('#email');
         const email = emailInput ? emailInput.value : '';
-        if (!email) return alert('이메일을 입력해주세요.');
-        alert('인증코드를 이메일로 전송했습니다.');
+        if (!email) return alert('?대찓?쇱쓣 ?낅젰?댁＜?몄슂.');
+        alert('?몄쬆肄붾뱶瑜??대찓?쇰줈 ?꾩넚?덉뒿?덈떎.');
     });
 
-    // 예약 제출 (동적 위임)
-    // 인원 + / - 버튼 동작
+    // ?덉빟 ?쒖텧 (?숈쟻 ?꾩엫)
+    // ?몄썝 + / - 踰꾪듉 ?숈옉
     document.addEventListener('click', function (e) {
         const minusBtn = e.target.closest('#btnPeopleMinus');
         const plusBtn = e.target.closest('#btnPeoplePlus');
@@ -134,13 +134,26 @@
         const peopleCount = parseInt(form.querySelector('#peopleCount')?.value || '1', 10);
 
         console.log({ activityId, name, passport, email, emailCode, peopleCount });
-        alert('예약이 완료되었습니다.');
+        alert('?덉빟???꾨즺?섏뿀?듬땲??');
         if (modalEl) {
             const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
             modal.hide();
         }
     });
+    // 업체 로그인 제출 처리 (프런트 데모)
+    document.addEventListener('submit', function (e) {
+        const form = e.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        if (form.id !== 'companyLoginForm') return;
+        e.preventDefault();
+
+        const bn = (form.querySelector('#businessNumber')?.value || '').trim();
+        const url = '/fragments/company-dashboard' + (bn ? ('?companyName=' + encodeURIComponent(bn)) : '');
+        loadPage(e, url);
+    });
 </script>
 
 </html>
+
+
 

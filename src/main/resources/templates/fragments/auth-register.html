@@ -1,0 +1,50 @@
+<!-- fragments/auth-register.html -->
+<div th:fragment="authRegister">
+  <section class="container" style="margin-top: 120px; max-width: 560px;">
+    <div class="card shadow-sm rounded-4 p-4">
+      <h4 class="fw-bold mb-3 text-center">회원가입</h4>
+      <p class="text-muted small text-center mb-4">아이디와 비밀번호만 입력하면 됩니다.</p>
+
+      <form id="authRegisterForm" class="needs-validation" novalidate>
+        <div class="mb-3">
+          <label for="regUsername" class="form-label">아이디</label>
+          <input type="text" class="form-control" id="regUsername" required>
+          <div class="invalid-feedback">아이디를 입력하세요.</div>
+        </div>
+        <div class="mb-3">
+          <label for="regPassword" class="form-label">비밀번호</label>
+          <input type="password" class="form-control" id="regPassword" minlength="6" required>
+          <div class="invalid-feedback">비밀번호(6자 이상)를 입력하세요.</div>
+        </div>
+        <div class="mb-3">
+          <label for="regPasswordConfirm" class="form-label">비밀번호 확인</label>
+          <input type="password" class="form-control" id="regPasswordConfirm" minlength="6" required>
+          <div class="invalid-feedback">비밀번호 확인을 입력하세요.</div>
+        </div>
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary"
+            onclick="(async function(e){
+              e.preventDefault();
+              const form=document.getElementById('authRegisterForm');
+              const u=document.getElementById('regUsername')?.value?.trim();
+              const p=document.getElementById('regPassword')?.value||'';
+              const pc=document.getElementById('regPasswordConfirm')?.value||'';
+              if(!u||!p||!pc){ form.classList.add('was-validated'); return; }
+              if(p!==pc){ alert('비밀번호가 일치하지 않습니다.'); return; }
+              try{
+                const res = await fetch('/api/auth/register', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:u, password:p, confirmPassword:pc})});
+                if(!res.ok){ const t=await res.text(); throw new Error(t||('오류 코드 '+res.status)); }
+                alert('회원가입이 완료되었습니다. 로그인 해주세요.');
+                loadPage(e, '/fragments/company-login');
+              }catch(err){ alert('회원가입 실패: '+err.message); }
+            })(event)">가입하기</button>
+        </div>
+      </form>
+      <div class="text-center mt-3 small text-muted">
+        이미 계정이 있으신가요? <a href="#" onclick="loadPage(event, '/fragments/company-login')">로그인</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 제출 처리는 main.html의 전역 submit 핸들러에서 처리됩니다. -->
