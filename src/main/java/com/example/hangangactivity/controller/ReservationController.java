@@ -2,6 +2,8 @@ package com.example.hangangactivity.controller;
 
 import java.time.LocalDate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,6 +14,8 @@ import com.example.hangangactivity.mapper.ActivityMapper;
 
 @Controller
 public class ReservationController {
+
+    private static final Logger log = LoggerFactory.getLogger(ReservationController.class);
 
     private final ActivityMapper activityMapper;
 
@@ -35,7 +39,8 @@ public class ReservationController {
             @RequestParam(value = "activityType", required = false) String activityType,
             @RequestParam(value = "peopleCount", required = false) Integer peopleCount
     ) {
-        System.out.println("Filters - Region: " + region + ", Start Date: " + dateStart + ", End Date: " + dateEnd + ", Activity Type: " + activityType + ", People: " + peopleCount);
+        log.info("Filters - region={}, startDate={}, endDate={}, activityType={}, peopleCount={}",
+                region, dateStart, dateEnd, activityType, peopleCount);
         model.addAttribute("activities", activityMapper.findByFilter(region, dateStart, dateEnd, activityType, peopleCount));
         return "fragments/reservation :: reservation";
     }
