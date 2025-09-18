@@ -32,10 +32,11 @@ public class ReservationController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateStart,
             @RequestParam(value = "dateEnd", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateEnd,
-            @RequestParam(value = "activityType", required = false) String activityType
+            @RequestParam(value = "activityType", required = false) String activityType,
+            @RequestParam(value = "peopleCount", required = false) Integer peopleCount
     ) {
-        System.out.println("Filters - Region: " + region + ", Start Date: " + dateStart + ", End Date: " + dateEnd + ", Activity Type: " + activityType);
-        model.addAttribute("activities", activityMapper.findByFilter(region, dateStart, dateEnd, activityType));
+        System.out.println("Filters - Region: " + region + ", Start Date: " + dateStart + ", End Date: " + dateEnd + ", Activity Type: " + activityType + ", People: " + peopleCount);
+        model.addAttribute("activities", activityMapper.findByFilter(region, dateStart, dateEnd, activityType, peopleCount));
         return "fragments/reservation :: reservation";
     }
 }

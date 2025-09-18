@@ -40,6 +40,17 @@
               <label for="emailCode" class="form-label">인증코드</label>
               <input type="text" class="form-control" id="emailCode" required>
             </div>
+
+            <div class="mb-3">
+              <label for="peopleCount" class="form-label">인원 선택</label>
+              <div class="input-group">
+                <input type="number" class="form-control text-center" id="peopleCount" name="peopleCount" min="1" value="1" required>
+                <button class="btn btn-outline-secondary" type="button" id="btnPeoplePlus">+</button>
+                <button class="btn btn-outline-secondary" type="button" id="btnPeopleMinus">-</button>
+              </div>
+              <div class="form-text">남은자리: <span data-field="left">-</span>명</div>
+            </div>
+
           </form>
         </div>
         <div class="modal-footer">

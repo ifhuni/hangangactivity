@@ -2,10 +2,9 @@
 <div th:fragment="home">
   <!-- 히어로 섹션 -->
   <section class="hero text-center text-white" style="
-  background: linear-gradient(#0d6efd, #0d6efd),
-              url('/img/hanriver.jpg') center/cover no-repeat;
-  padding: 100px 0;
-">
+    background: linear-gradient(#0d6efd, #0d6efd), url('/img/hanriver.jpg') center/cover no-repeat;
+    padding: 100px 0;
+  ">
     <div class="container">
       <h1 class="display-5 fw-bold">한강 액티비티 쉽게 예약하세요</h1>
       <p class="lead">지역과 날짜를 선택해 근처 한강 액티비티를 찾아보세요</p>
@@ -13,15 +12,14 @@
       <!-- 검색 카드 -->
       <div class="bg-white shadow-sm rounded-4 p-4 mx-auto" style="max-width: 900px;">
         <form class="row g-3">
-          <div class="col-md-4">
+          <div class="col-md-3">
             <select id="regionSelect" class="form-select">
               <option value="" selected>지역 선택</option>
               <option value="광진구">광진구</option>
               <option value="강남구">강남구</option>
-              <option value="영등포구">영등포구</option>
               <option value="마포구">마포구</option>
               <option value="송파구">송파구</option>
-              <option value="용산구">용산구</option>
+              <option value="양천구">양천구</option>
             </select>
           </div>
           <div class="col-md-4">
@@ -29,31 +27,39 @@
               <input type="date" id="dateStart" class="form-control" placeholder="시작일자">
               <span class="input-group-text">~</span>
               <input type="date" id="dateEnd" class="form-control" placeholder="종료일자">
-            </div>  
+            </div>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
             <select id="activityType" class="form-select">
-              <option value="" selected>활동 종류</option>
+              <option value="" selected>활동 유형</option>
               <option value="육상">육상</option>
               <option value="수상">수상</option>
               <option value="공중">공중</option>
             </select>
           </div>
+          <div class="col-md-2">
+            <div class="input-group">
+              <span class="input-group-text">인원</span>
+              <input type="number" id="peopleCount" class="form-control" min="1" placeholder="명수" value="1">
+            </div>
+          </div>
           <div class="col-12 text-center">
-            <button type="submit" class="btn btn-primary px-5" 
+            <button type="submit" class="btn btn-primary px-5"
               onclick="(function(e){
-               e.preventDefault(); 
-               var r=document.getElementById('regionSelect')?.value||''; 
-               var ds=document.getElementById('dateStart')?.value||''; 
-               var de=document.getElementById('dateEnd')?.value||''; 
-               var ty=document.getElementById('activityType')?.value||''; 
-               var params=[]; 
-               if(r) params.push('region='+encodeURIComponent(r)); 
-               if(ds) params.push('dateStart='+encodeURIComponent(ds)); 
-               if(de) params.push('dateEnd='+encodeURIComponent(de));
-               if(ty) params.push('activityType='+encodeURIComponent(ty));
-               var url='/fragments/reservation'+(params.length?('?'+params.join('&')):''); 
-               loadPage(e, url); 
+                e.preventDefault();
+                var r=document.getElementById('regionSelect')?.value||'';
+                var ds=document.getElementById('dateStart')?.value||'';
+                var de=document.getElementById('dateEnd')?.value||'';
+                var ty=document.getElementById('activityType')?.value||'';
+                var pc=document.getElementById('peopleCount')?.value||'';
+                var params=[];
+                if(r) params.push('region='+encodeURIComponent(r));
+                if(ds) params.push('dateStart='+encodeURIComponent(ds));
+                if(de) params.push('dateEnd='+encodeURIComponent(de));
+                if(ty) params.push('activityType='+encodeURIComponent(ty));
+                if(pc) params.push('peopleCount='+encodeURIComponent(pc));
+                var url='/fragments/reservation'+(params.length?('?'+params.join('&')):'');
+                loadPage(e, url);
               })(event)">검색</button>
           </div>
         </form>
@@ -61,23 +67,20 @@
     </div>
   </section>
 
-  <!-- 추천 활동 시설 -->
+  <!-- 추천 활동 섹션 (샘플) -->
   <section class="container my-5">
-    <h2 class="mb-4 fw-bold text-center">추천 활동 시설</h2>
+    <h2 class="mb-4 fw-bold text-center">추천 활동</h2>
     <div class="row g-4">
-      <!-- 시설 카드 1 -->
       <div class="col-md-4">
         <div class="card h-100 shadow-sm">
           <img src="/img/climb_1.jpg" class="card-img-top" alt="클라이밍 이미지" style="height: 200px; object-fit: cover;">
           <div class="card-body">
-            <h5 class="card-title fw-semibold">뚝섬 한강공원 인공암벽</h5>
+            <h5 class="card-title fw-semibold">자양한강공원 인공암벽</h5>
             <p class="card-text text-muted">서울 광진구 | 최신 장비 보유 | 11:00 ~ 23:00</p>
             <a href="/fragments/reservation" class="btn btn-outline-primary w-100" onclick="loadPage(event, '/fragments/reservation')">예약하기</a>
           </div>
         </div>
       </div>
-
-      <!-- 시설 카드 2 -->
       <div class="col-md-4">
         <div class="card h-100 shadow-sm">
           <img src="/img/swimming_1.jpg" class="card-img-top" alt="수영 이미지" style="height: 200px; object-fit: cover;">
@@ -88,8 +91,7 @@
           </div>
         </div>
       </div>
-
-      <!-- 더 많은 카드 추가 가능 -->
     </div>
   </section>
 </div>
+

@@ -6,45 +6,74 @@
 <mapper namespace="com.example.hangangactivity.mapper.ActivityMapper">
 
   <select id="findAll" resultType="com.example.hangangactivity.model.Activity">
-    SELECT id, company_id, title, description, "location", max_participants, created_at, activity_date, start_time, end_time
-    FROM public.activities
-    ORDER BY created_at DESC
+    SELECT 
+      a.id, a.company_id, a.title, a.description, a."location", a.max_participants, a.created_at, a.activity_date, a.start_time, a.end_time,
+      (
+        SELECT COALESCE(COUNT(1), 0)
+        FROM public.reservations r
+        WHERE r.activity_id = a.id
+          AND r.status = 'confirmed'
+      ) AS current_participants
+    FROM public.activities a
+    ORDER BY a.created_at DESC
   </select>
 
   <select id="findByRegion" parameterType="string" resultType="com.example.hangangactivity.model.Activity">
-    SELECT id, company_id, title, description, "location", max_participants, created_at, activity_date, start_time, end_time
-    FROM public.activities
+    SELECT 
+      a.id, a.company_id, a.title, a.description, a."location", a.max_participants, a.created_at, a.activity_date, a.start_time, a.end_time,
+      (
+        SELECT COALESCE(COUNT(1), 0)
+        FROM public.reservations r
+        WHERE r.activity_id = a.id
+          AND r.status = 'confirmed'
+      ) AS current_participants
+    FROM public.activities a
     <where>
       <if test="region != null and region != ''">
-        "location" ILIKE CONCAT('%', #{region}, '%')
+        a."location" ILIKE CONCAT('%', #{region}, '%')
       </if>
     </where>
-    ORDER BY created_at DESC
+    ORDER BY a.created_at DESC
   </select>
 
   <select id="findByFilter" resultType="com.example.hangangactivity.model.Activity">
-    SELECT id, company_id, title, description, "location", max_participants, created_at, activity_date, start_time, end_time
-    FROM public.activities
+    SELECT 
+      a.id, a.company_id, a.title, a.description, a."location", a.max_participants, a.created_at, a.activity_date, a.start_time, a.end_time,
+      (
+        SELECT COALESCE(COUNT(1), 0)
+        FROM public.reservations r
+        WHERE r.activity_id = a.id
+          AND r.status = 'confirmed'
+      ) AS current_participants
+    FROM public.activities a
     <where>
       <if test="region != null and region != ''">
-        "location" ILIKE CONCAT('%', #{region}, '%')
+        a."location" ILIKE CONCAT('%', #{region}, '%')
       </if>
       <choose>
         <when test="startDate != null and endDate != null">
-          AND activity_date BETWEEN #{startDate} AND #{endDate}
+          AND a.activity_date BETWEEN #{startDate} AND #{endDate}
         </when>
         <when test="startDate != null">
-          AND activity_date &gt;= #{startDate}
+          AND a.activity_date &gt;= #{startDate}
         </when>
         <when test="endDate != null">
-          AND activity_date &lt;= #{endDate}
+          AND a.activity_date &lt;= #{endDate}
         </when>
       </choose>
       <if test="activityType != null and activityType != ''">
-        AND activity_type = #{activityType}
+        AND a.activity_type = #{activityType}
+      </if>
+      <if test="peopleCount != null">
+        AND a.max_participants - (
+          SELECT COALESCE(COUNT(1), 0)
+          FROM public.reservations r2
+          WHERE r2.activity_id = a.id
+            AND r2.status = 'confirmed'
+        ) &gt;= #{peopleCount}
       </if>
     </where>
-    ORDER BY created_at DESC
+    ORDER BY a.created_at DESC
   </select>
 
 </mapper>

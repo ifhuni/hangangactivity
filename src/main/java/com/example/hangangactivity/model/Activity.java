@@ -11,6 +11,7 @@ public class Activity {
     private String description;
     private String location;
     private Integer maxParticipants;
+    private Integer currentParticipants;
     private LocalDateTime createdAt;
     private LocalDate activityDate;
     private LocalTime startTime;
@@ -33,6 +34,9 @@ public class Activity {
 
     public Integer getMaxParticipants() { return maxParticipants; }
     public void setMaxParticipants(Integer maxParticipants) { this.maxParticipants = maxParticipants; }
+
+    public Integer getCurrentParticipants() { return currentParticipants; }
+    public void setCurrentParticipants(Integer currentParticipants) { this.currentParticipants = currentParticipants; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

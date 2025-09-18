@@ -18,5 +18,6 @@ public interface ActivityMapper {
             @Param("region") String region,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
-            @Param("activityType") String activityType);
+            @Param("activityType") String activityType,
+            @Param("peopleCount") Integer peopleCount);
 }
