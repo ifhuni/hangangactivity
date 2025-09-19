@@ -23,9 +23,18 @@
             eventOrNull.preventDefault();
         }
 
-        fetch(url)
+        const AUTH_REQUIRED_ERROR = 'AUTH_REQUIRED';
+
+        fetch(url, { credentials: 'same-origin' })
             .then(res => {
-                if (!res.ok) throw new Error('?섏씠吏瑜?遺덈윭?ㅻ뒗 ???ㅽ뙣?덉뒿?덈떎.');
+                if (res.status === 401) {
+                    alert('로그인이 필요합니다.');
+                    if (url !== '/fragments/company-login') {
+                        loadPage(null, '/fragments/company-login');
+                    }
+                    throw new Error(AUTH_REQUIRED_ERROR);
+                }
+                if (!res.ok) throw new Error('페이지를 불러오는 데 실패했습니다.');
                 return res.text();
             })
             .then(html => {
@@ -33,11 +42,14 @@
                 if (contentDiv) {
                     contentDiv.innerHTML = html;
                 } else {
-                    console.error('id="content" ?붿냼媛 ?놁뒿?덈떎.');
+                    console.error('id="content" 요소가 없습니다.');
                 }
             })
             .catch(err => {
-                alert('?섏씠吏 濡쒕뵫 ?ㅻ쪟: ' + err.message);
+                if (err?.message === AUTH_REQUIRED_ERROR) {
+                    return;
+                }
+                alert('페이지 로딩 오류: ' + err.message);
             });
     }
 
@@ -140,20 +152,10 @@
             modal.hide();
         }
     });
-    // 업체 로그인 제출 처리 (프런트 데모)
-    document.addEventListener('submit', function (e) {
-        const form = e.target;
-        if (!(form instanceof HTMLFormElement)) return;
-        if (form.id !== 'companyLoginForm') return;
-        e.preventDefault();
-
-        const bn = (form.querySelector('#businessNumber')?.value || '').trim();
-        const url = '/fragments/company-dashboard' + (bn ? ('?companyName=' + encodeURIComponent(bn)) : '');
-        loadPage(e, url);
-    });
 </script>
 
 </html>
+
 
 
 

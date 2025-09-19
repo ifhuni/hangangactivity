@@ -145,6 +145,19 @@ COMMENT ON COLUMN public.email_logs.id IS '이메일 로그 고유 식별자';
 COMMENT ON COLUMN public.email_logs.sent_at IS '발송 타임스탬프';
 
 -- ===========================================
+-- Table: email_logs (이메일 발송 기록)
+-- ===========================================
+CREATE TABLE public.company_users (
+    id BIGSERIAL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE public.company_users IS '사용자 계정';
+CREATE INDEX IF NOT EXISTS idx_company_users_username ON company_users (username);
+
+-- ===========================================
 -- Insert: 샘플 데이터
 -- ===========================================
 -- 업체 정보

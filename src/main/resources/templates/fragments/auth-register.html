@@ -1,9 +1,9 @@
-<!-- fragments/auth-register.html -->
+﻿<!-- fragments/auth-register.html -->
 <div th:fragment="authRegister">
   <section class="container" style="margin-top: 120px; max-width: 560px;">
     <div class="card shadow-sm rounded-4 p-4">
       <h4 class="fw-bold mb-3 text-center">회원가입</h4>
-      <p class="text-muted small text-center mb-4">아이디와 비밀번호만 입력하면 됩니다.</p>
+      <p class="text-muted small text-center mb-4">아이디와 비밀번호를 입력해 주세요.</p>
 
       <form id="authRegisterForm" class="needs-validation" novalidate>
         <div class="mb-3">
@@ -32,11 +32,22 @@
               if(!u||!p||!pc){ form.classList.add('was-validated'); return; }
               if(p!==pc){ alert('비밀번호가 일치하지 않습니다.'); return; }
               try{
-                const res = await fetch('/api/auth/register', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:u, password:p, confirmPassword:pc})});
-                if(!res.ok){ const t=await res.text(); throw new Error(t||('오류 코드 '+res.status)); }
-                alert('회원가입이 완료되었습니다. 로그인 해주세요.');
+                const res = await fetch('/api/auth/register', {
+                  method:'POST',
+                  headers:{'Content-Type':'application/json'},
+                  body: JSON.stringify({username:u, password:p, confirmPassword:pc}),
+                  credentials:'same-origin'
+                });
+                const data = await res.json().catch(()=>null);
+                if(!res.ok){
+                  const msg = data?.message || data?.error || ('오류 코드 ' + res.status);
+                  throw new Error(msg);
+                }
+                alert(data?.message || '회원가입이 완료되었습니다. 로그인해 주세요.');
                 loadPage(e, '/fragments/company-login');
-              }catch(err){ alert('회원가입 실패: '+err.message); }
+              }catch(err){
+                alert('회원가입 실패: ' + err.message);
+              }
             })(event)">가입하기</button>
         </div>
       </form>
@@ -47,4 +58,4 @@
   </section>
 </div>
 
-<!-- 제출 처리는 main.html의 전역 submit 핸들러에서 처리됩니다. -->
+<!-- 제출 처리는 main.html의 공통 submit 핸들러가 담당합니다. -->
