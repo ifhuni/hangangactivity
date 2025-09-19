@@ -3,38 +3,74 @@
   <section class="container" style="margin-top: 120px; max-width: 720px;">
     <div class="card shadow-sm rounded-4 p-4">
       <h4 class="fw-bold mb-3">업체 등록</h4>
-      <p class="text-muted small mb-4">사업자등록번호, 대표자 정보, 사무실 주소, 회사 이름을 입력하세요.</p>
+      <p class="text-muted small mb-4">사업자등록번호와 대표자 정보, 사무실 주소를 입력해 주세요.</p>
 
       <form id="companyRegisterForm" class="needs-validation" novalidate>
         <div class="row g-3">
           <div class="col-md-6">
-            <label for="companyName" class="form-label">회사 이름</label>
+            <label for="companyName" class="form-label">업체 이름</label>
             <input type="text" id="companyName" class="form-control" required>
-            <div class="invalid-feedback">회사 이름을 입력하세요.</div>
+            <div class="invalid-feedback">업체 이름을 입력해 주세요.</div>
           </div>
           <div class="col-md-6">
             <label for="businessNumber" class="form-label">사업자등록번호</label>
             <input type="text" id="businessNumber" class="form-control" placeholder="111-22-33333" required>
-            <div class="invalid-feedback">사업자등록번호를 입력하세요.</div>
+            <div class="invalid-feedback">사업자등록번호를 입력해 주세요.</div>
           </div>
           <div class="col-md-6">
             <label for="ceoName" class="form-label">대표자 이름</label>
             <input type="text" id="ceoName" class="form-control" required>
-            <div class="invalid-feedback">대표자 이름을 입력하세요.</div>
+            <div class="invalid-feedback">대표자 이름을 입력해 주세요.</div>
           </div>
           <div class="col-md-6">
             <label for="ceoContact" class="form-label">대표자 연락처</label>
             <input type="text" id="ceoContact" class="form-control" placeholder="010-0000-0000" required>
-            <div class="invalid-feedback">대표자 연락처를 입력하세요.</div>
+            <div class="invalid-feedback">대표자 연락처를 입력해 주세요.</div>
+          </div>
+          <div class="col-md-6">
+            <label for="officeContact" class="form-label">사무실 연락처 (선택)</label>
+            <input type="text" id="officeContact" class="form-control" placeholder="02-000-0000">
           </div>
           <div class="col-12">
             <label for="officeAddress" class="form-label">사무실 주소</label>
             <input type="text" id="officeAddress" class="form-control" required>
-            <div class="invalid-feedback">사무실 주소를 입력하세요.</div>
+            <div class="invalid-feedback">사무실 주소를 입력해 주세요.</div>
           </div>
         </div>
         <div class="d-flex gap-2 mt-4">
-          <button type="submit" class="btn btn-primary" onclick="(function(e){e.preventDefault();var ok=['#companyName','#businessNumber','#ceoName','#ceoContact','#officeAddress'].every(function(s){return document.querySelector(s)?.value?.trim()}); if(!ok){document.getElementById('companyRegisterForm').classList.add('was-validated');return;} alert('업체 등록이 완료되었습니다.'); loadPage(e, '/fragments/company-dashboard?companyName='+encodeURIComponent(document.querySelector('#companyName').value));})(event)">등록</button>
+          <button type="submit" class="btn btn-primary"
+            onclick="(async function(e){
+              e.preventDefault();
+              const form=document.getElementById('companyRegisterForm');
+              const fields=['companyName','businessNumber','ceoName','ceoContact','officeAddress'];
+              const missing=fields.some(id=>!(document.getElementById(id)?.value?.trim()));
+              if(missing){ form.classList.add('was-validated'); return; }
+              const payload={
+                companyName: document.getElementById('companyName')?.value?.trim(),
+                businessNumber: document.getElementById('businessNumber')?.value?.trim(),
+                ceoName: document.getElementById('ceoName')?.value?.trim(),
+                ceoContact: document.getElementById('ceoContact')?.value?.trim(),
+                officeContact: document.getElementById('officeContact')?.value?.trim(),
+                officeAddress: document.getElementById('officeAddress')?.value?.trim()
+              };
+              try{
+                const res = await fetch('/api/company/register', {
+                  method:'POST',
+                  headers:{'Content-Type':'application/json'},
+                  credentials:'same-origin',
+                  body: JSON.stringify(payload)
+                });
+                const data = await res.json().catch(()=>null);
+                if(!res.ok){
+                  const msg = data?.message || data?.error || ('오류 코드 ' + res.status);
+                  throw new Error(msg);
+                }
+                alert(data?.message || '업체 등록 신청이 접수되었습니다.');
+                loadPage(null, '/fragments/company-dashboard');
+              }catch(err){
+                alert('업체 등록 실패: ' + err.message);
+              }
+            })(event)">등록 신청</button>
           <button type="button" class="btn btn-outline-secondary" onclick="loadPage(event, '/fragments/home')">취소</button>
         </div>
       </form>
@@ -42,4 +78,4 @@
   </section>
 </div>
 
-<!-- 제출 처리는 main.html의 전역 submit 핸들러에서 처리됩니다. -->
+<!-- 제출 처리는 main.html의 공통 submit 핸들러가 담당합니다. -->

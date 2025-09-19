@@ -122,9 +122,9 @@ COMMENT ON TABLE public.reservations IS '활동 예약 정보';
 COMMENT ON COLUMN public.reservations.id IS '예약 고유 식별자';
 COMMENT ON COLUMN public.reservations.activity_id IS '예약 활동 ID';
 COMMENT ON COLUMN public.reservations.tourist_id IS '관광객 ID';
-COMMENT ON COLUMN public.reservations.status IS '예약 상태';
-COMMENT ON COLUMN public.reservations.special_request IS '특별 요청 사항';
-COMMENT ON COLUMN public.reservations.created_at IS '생성 타임스탬프';
+COMMENT ON COLUMN public.reservations.status IS '?�약 ?�태';
+COMMENT ON COLUMN public.reservations.special_request IS '?�별 ?�청 ?�항';
+COMMENT ON COLUMN public.reservations.created_at IS '?�성 ?�?�스?�프';
 
 -- ===========================================
 -- Table: email_logs (이메일 발송 기록)
@@ -150,8 +150,12 @@ COMMENT ON COLUMN public.email_logs.sent_at IS '발송 타임스탬프';
 CREATE TABLE public.company_users (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    company_id INT REFERENCES public.companies(id),
+    role VARCHAR(20) NOT NULL DEFAULT 'COMPANY',
+    membership_status VARCHAR(20) NOT NULL DEFAULT 'UNASSIGNED'
 );
 
 COMMENT ON TABLE public.company_users IS '사용자 계정';
@@ -221,3 +225,7 @@ VALUES
 (9, 9, '클라이밍 반 예약 확인', '준비물을 꼭 챙겨주세요.', 'sent'),
 (10, 10, '패들보드 체험 확인', '세부 일정은 한 번 더 확인 중입니다.', 'sent');
 
+INSERT INTO public.company_users
+(id, username, "name", password_hash, created_at, company_id, "role", membership_status)
+VALUES
+(1, 'admin', '권세훈', '$2a$10$HLpSuVhpMcK.0l/aRz1QUuHnytQHKeFCvobb4FihR5kBADnmDqrwC', '2025-09-19 13:46:34.025', NULL, 'ADMIN', 'APPROVED');

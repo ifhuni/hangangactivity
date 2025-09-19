@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.hangangactivity.mapper.CompanyMapper">
+
+  <resultMap id="CompanyResultMap" type="com.example.hangangactivity.model.Company">
+    <id property="id" column="id" />
+    <result property="companyName" column="company_name" />
+    <result property="businessNumber" column="business_number" />
+    <result property="ceoName" column="ceo_name" />
+    <result property="ceoContact" column="ceo_contact" />
+    <result property="officeContact" column="office_contact" />
+    <result property="officeAddress" column="office_address" />
+    <result property="verified" column="is_verified" />
+    <result property="createdAt" column="created_at" />
+  </resultMap>
+
+  <insert id="insert" parameterType="com.example.hangangactivity.model.Company" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO companies (company_name, business_number, ceo_name, ceo_contact, office_contact, office_address, is_verified)
+    VALUES (#{companyName}, #{businessNumber}, #{ceoName}, #{ceoContact}, #{officeContact}, #{officeAddress}, #{verified})
+  </insert>
+
+  <select id="findById" parameterType="long" resultMap="CompanyResultMap">
+    SELECT id, company_name, business_number, ceo_name, ceo_contact, office_contact, office_address, is_verified, created_at
+    FROM companies
+    WHERE id = #{id}
+  </select>
+
+  <update id="updateVerification">
+    UPDATE companies
+    SET is_verified = #{verified}
+    WHERE id = #{id}
+  </update>
+
+</mapper>

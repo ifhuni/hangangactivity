@@ -1,4 +1,4 @@
-﻿<!-- fragments/company-login.html -->
+<!-- fragments/company-login.html -->
 <div th:fragment="companyLogin">
   <section class="container" style="margin-top: 120px; max-width: 560px;">
     <div class="card shadow-sm rounded-4 p-4">
@@ -36,9 +36,27 @@
                   const msg = data?.message || data?.error || ('오류 코드 ' + res.status);
                   throw new Error(msg);
                 }
-                alert(data?.message || '로그인에 성공했습니다.');
-                const dashboardUrl = data?.username
-                  ? '/fragments/company-dashboard?companyName=' + encodeURIComponent(data.username)
+                if(data?.message){
+                  alert(data.message);
+                } else {
+                  alert('로그인에 성공했습니다.');
+                }
+                window.companyAuth = window.companyAuth || {};
+                window.companyAuth.loggedIn = true;
+                window.companyAuth.role = data?.role || 'COMPANY';
+                window.companyAuth.membershipStatus = data?.membershipStatus || '';
+                window.companyAuth.companyName = data?.companyName || data?.username || '';
+                if(data?.requiresCompanySetup){
+                  if(data?.nextAction === 'REGISTER'){
+                    loadPage(e, '/fragments/company-register');
+                  } else if(data?.nextAction === 'AWAIT_APPROVAL'){
+                    alert('관리자 승인을 기다려 주세요.');
+                  }
+                  return;
+                }
+                const companyLabel = data?.companyName || data?.username;
+                const dashboardUrl = companyLabel
+                  ? '/fragments/company-dashboard?companyName=' + encodeURIComponent(companyLabel)
                   : '/fragments/company-dashboard';
                 loadPage(e, dashboardUrl);
               }catch(err){

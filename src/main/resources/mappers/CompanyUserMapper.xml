@@ -8,19 +8,104 @@
   <resultMap id="CompanyUserResultMap" type="com.example.hangangactivity.model.CompanyUser">
     <id property="id" column="id" />
     <result property="username" column="username" />
+    <result property="name" column="name" />
     <result property="passwordHash" column="password_hash" />
     <result property="createdAt" column="created_at" />
+    <result property="companyId" column="company_id" />
+    <result property="role" column="role" />
+    <result property="membershipStatus" column="membership_status" />
+    <result property="companyName" column="company_name" />
+    <result property="companyVerified" column="company_verified" />
+  </resultMap>
+
+  <resultMap id="PendingCompanyRequestMap" type="com.example.hangangactivity.dto.PendingCompanyRequest">
+    <id property="companyId" column="company_id" />
+    <result property="userId" column="user_id" />
+    <result property="username" column="username" />
+    <result property="companyName" column="company_name" />
+    <result property="businessNumber" column="business_number" />
+    <result property="ceoName" column="ceo_name" />
+    <result property="ceoContact" column="ceo_contact" />
+    <result property="officeContact" column="office_contact" />
+    <result property="officeAddress" column="office_address" />
+    <result property="companyVerified" column="is_verified" />
+    <result property="membershipStatus" column="membership_status" />
+    <result property="companyCreatedAt" column="company_created_at" />
   </resultMap>
 
   <select id="findByUsername" parameterType="string" resultMap="CompanyUserResultMap">
-    SELECT id, username, password_hash, created_at
-    FROM company_users
-    WHERE username = #{username}
+    SELECT
+      cu.id,
+      cu.username,
+      cu.name,
+      cu.password_hash,
+      cu.created_at,
+      cu.company_id,
+      cu.role,
+      cu.membership_status,
+      c.company_name,
+      c.is_verified AS company_verified
+    FROM company_users cu
+    LEFT JOIN companies c ON cu.company_id = c.id
+    WHERE cu.username = #{username}
+  </select>
+
+  <select id="findById" parameterType="long" resultMap="CompanyUserResultMap">
+    SELECT
+      cu.id,
+      cu.username,
+      cu.name,
+      cu.password_hash,
+      cu.created_at,
+      cu.company_id,
+      cu.role,
+      cu.membership_status,
+      c.company_name,
+      c.is_verified AS company_verified
+    FROM company_users cu
+    LEFT JOIN companies c ON cu.company_id = c.id
+    WHERE cu.id = #{id}
   </select>
 
   <insert id="insert" parameterType="com.example.hangangactivity.model.CompanyUser" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO company_users (username, password_hash, created_at)
-    VALUES (#{username}, #{passwordHash}, #{createdAt})
+    INSERT INTO company_users (username, name, password_hash, created_at, company_id, role, membership_status)
+    VALUES (#{username}, #{name}, #{passwordHash}, #{createdAt}, #{companyId}, #{role}, #{membershipStatus})
   </insert>
 
+  <update id="updateMembershipOnRegister">
+    UPDATE company_users
+    SET company_id = #{companyId},
+        membership_status = #{status}
+    WHERE id = #{userId}
+  </update>
+
+  <update id="updateMembershipStatus">
+    UPDATE company_users
+    SET membership_status = #{status}
+    WHERE id = #{userId}
+  </update>
+
+  <select id="findPendingRequests" resultMap="PendingCompanyRequestMap">
+    SELECT
+      cu.name,
+      cu.id AS user_id,
+      cu.username,
+      cu.company_id,
+      cu.membership_status,
+      c.company_name,
+      c.business_number,
+      c.ceo_name,
+      c.ceo_contact,
+      c.office_contact,
+      c.office_address,
+      c.is_verified,
+      c.created_at AS company_created_at
+    FROM company_users cu
+    JOIN companies c ON cu.company_id = c.id
+    WHERE UPPER(cu.membership_status) = 'PENDING'
+    ORDER BY c.created_at DESC
+  </select>
+
 </mapper>
+
+
