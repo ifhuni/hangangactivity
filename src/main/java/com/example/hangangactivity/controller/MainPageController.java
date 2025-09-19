@@ -1,5 +1,7 @@
 package com.example.hangangactivity.controller;
 
+import java.util.Locale;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,19 +28,30 @@ public class MainPageController {
   }
 
   @GetMapping("/fragments/company-dashboard")
-  public String companyDashboardFragment(HttpSession session,Model model,@RequestParam(value = "companyName", required = false) String companyNameParam) {
+  public String companyDashboardFragment(HttpSession session, Model model,
+      @RequestParam(value = "companyName", required = false) String companyNameParam) {
     String role = session != null ? (String) session.getAttribute(AuthController.SESSION_COMPANY_ROLE) : null;
     String status = session != null ? (String) session.getAttribute(AuthController.SESSION_COMPANY_MEMBERSHIP_STATUS) : null;
     String sessionCompanyName = session != null ? (String) session.getAttribute(AuthController.SESSION_COMPANY_NAME) : null;
     String sessionCompanyUserName = session != null ? (String) session.getAttribute(AuthController.SESSION_COMPANY_USER_NAME) : null;
 
-    String effectiveName = sessionCompanyName != null ? sessionCompanyName : companyNameParam;
+    String normalizedRole = role != null ? role.trim().toUpperCase(Locale.ROOT) : "COMPANY";
+    String normalizedStatus = status != null ? status.trim().toUpperCase(Locale.ROOT) : "UNASSIGNED";
 
-    model.addAttribute("companyRole", role != null ? role : "COMPANY");
-    model.addAttribute("companyStatus", status != null ? status : "UNASSIGNED");
-    model.addAttribute("companyName", effectiveName != null ? effectiveName : "?낆껜");
+    String effectiveName = null;
+    if (sessionCompanyName != null && !sessionCompanyName.isBlank()) {
+      effectiveName = sessionCompanyName;
+    } else if (companyNameParam != null && !companyNameParam.isBlank()) {
+      effectiveName = companyNameParam.trim();
+    }
+    if (effectiveName == null || effectiveName.isBlank()) {
+      effectiveName = "업체";
+    }
+
+    model.addAttribute("companyRole", normalizedRole);
+    model.addAttribute("companyStatus", normalizedStatus);
+    model.addAttribute("companyName", effectiveName);
     model.addAttribute("companyUserName", sessionCompanyUserName);
-    System.out.println(model);
     return "fragments/company-dashboard :: companyDashboard";
   }
 

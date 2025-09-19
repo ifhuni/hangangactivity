@@ -47,7 +47,7 @@
       </div>
     </div>
 
-    <div id="adminApprovalSection" class="card shadow-sm rounded-4 p-3">
+    <div id="adminApprovalSection" class="card shadow-sm rounded-4 p-3" th:classappend="${#strings.equalsIgnoreCase(companyRole, 'ADMIN')} ? '' : ' d-none'">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <h5 class="fw-bold mb-0">승인 대기 업체</h5>
         <div class="d-flex gap-2">
@@ -59,6 +59,7 @@
       </div>
       <div class="small text-muted mb-2">승인이 완료되면 담당자 계정으로 대시보드를 이용할 수 있습니다.</div>
       <div data-role="error" class="alert alert-danger d-none"></div>
+      <div data-role="success" class="alert alert-success d-none">선택한 업체를 승인했습니다.</div>
       <div data-role="empty" class="alert alert-info d-none">승인 대기 중인 업체가 없습니다.</div>
       <div class="table-responsive d-none" data-role="table-wrapper">
         <table class="table table-sm align-middle mb-0">
@@ -98,14 +99,30 @@
   function initPendingSection(isAdmin){
     const section = document.getElementById('adminApprovalSection');
     if (!section) return;
+    if (!isAdmin) {
+      section.classList.add('d-none');
+      return;
+    }
 
     const errorEl = section.querySelector('[data-role="error"]');
+    const successEl = section.querySelector('[data-role="success"]');
     const emptyEl = section.querySelector('[data-role="empty"]');
     const tableWrapper = section.querySelector('[data-role="table-wrapper"]');
     const tbody = section.querySelector('[data-role="pending-table-body"]');
     const refreshBtn = document.getElementById('btnRefreshPending');
     const spinner = document.getElementById('pendingSpinner');
     const actionHeader = section.querySelector('[data-role="action-header"]');
+    const hideSuccess = () => {
+      if (successEl) successEl.classList.add('d-none');
+    };
+
+    const showSuccess = (message) => {
+      if (!successEl) return;
+      if (typeof message === 'string' && message.trim().length > 0) {
+        successEl.textContent = message;
+      }
+      successEl.classList.remove('d-none');
+    };
 
     if (actionHeader) {
       if (isAdmin) {
@@ -118,6 +135,7 @@
     }
 
     const setState = (state) => {
+      hideSuccess();
       if (spinner) spinner.classList.toggle('d-none', state !== 'loading');
       if (refreshBtn) refreshBtn.disabled = state === 'loading';
       if (errorEl) errorEl.classList.toggle('d-none', state !== 'error');
@@ -216,27 +234,41 @@
       tbody.addEventListener('click', async (event) => {
         const btn = event.target.closest('button[data-action="approve"]');
         if (!btn) return;
+
         const row = btn.closest('tr');
         if (!row) return;
+
         const userId = row.dataset.userId;
         const companyId = row.dataset.companyId;
         if (!userId || !companyId) return;
+
         if (!confirm('해당 업체를 승인하시겠습니까?')) return;
-        try{
+
+        hideSuccess();
+        const originalLabel = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>승인중';
+
+        try {
           const res = await fetch(`/api/company/pending/${encodeURIComponent(userId)}/approve`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
             body: JSON.stringify({ companyId: Number(companyId) })
           });
-          if(!res.ok){
+          if (!res.ok) {
             throw new Error('승인 처리에 실패했습니다. (HTTP ' + res.status + ')');
           }
+
+          const companyLabel = row.querySelector('td')?.textContent?.trim() || '선택한 업체';
           row.remove();
           if (tbody.children.length === 0) {
             setState('empty');
           }
-        } catch(err) {
+          showSuccess(`${companyLabel} 업체를 승인했습니다.`);
+        } catch (err) {
+          btn.disabled = false;
+          btn.innerHTML = originalLabel;
           alert(err.message);
         }
       });

@@ -66,13 +66,9 @@
     }
 
     function executeInlineScripts(container) {
-        console.log('executeInlineScripts');
-        console.log(container);
-        console.log(container.querySelectorAll('script'));
         if (!container) return;
         
         const scripts = container.querySelectorAll('script');
-        console.log(script);
         scripts.forEach(oldScript => {
             const newScript = document.createElement('script');
             for (const attr of oldScript.attributes) {
