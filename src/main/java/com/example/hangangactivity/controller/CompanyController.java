@@ -1,4 +1,4 @@
-package com.example.hangangactivity.controller;
+﻿package com.example.hangangactivity.controller;
 
 import java.util.List;
 
@@ -58,7 +58,7 @@ public class CompanyController {
         session.setAttribute(AuthController.SESSION_COMPANY_MEMBERSHIP_STATUS, updatedUser.getMembershipStatus());
         session.setAttribute(AuthController.SESSION_COMPANY_NAME, updatedUser.getCompanyName());
 
-        String message = "업체 등록 신청이 접수되었습니다. 관리자 승인을 기다려 주세요.";
+        String message = "업체 등록 요청이 접수되었습니다. 관리자 승인을 기다려 주세요.";
         CompanyRegistrationResponse response = new CompanyRegistrationResponse(true, message,
                 updatedUser.getCompanyId(), updatedUser.getMembershipStatus());
 

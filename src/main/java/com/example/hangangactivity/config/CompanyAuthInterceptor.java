@@ -1,4 +1,4 @@
-package com.example.hangangactivity.config;
+﻿package com.example.hangangactivity.config;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -14,8 +14,8 @@ import jakarta.servlet.http.HttpSession;
 @Component
 public class CompanyAuthInterceptor implements HandlerInterceptor {
 
-    private static final String AUTH_REQUIRED_MESSAGE = "로그?�이 ?�요?�니??";
-    private static final String COMPANY_APPROVAL_REQUIRED_MESSAGE = "?�속???�체 ?�인 ???�용?????�습?�다.";
+    private static final String AUTH_REQUIRED_MESSAGE = "로그인이 필요합니다.";
+    private static final String COMPANY_APPROVAL_REQUIRED_MESSAGE = "회사 승인 완료 후 이용 가능합니다.";
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String STATUS_APPROVED = "APPROVED";
 
@@ -95,3 +95,4 @@ public class CompanyAuthInterceptor implements HandlerInterceptor {
         return null;
     }
 }
+

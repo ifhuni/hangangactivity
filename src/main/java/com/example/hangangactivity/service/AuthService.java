@@ -1,4 +1,4 @@
-package com.example.hangangactivity.service;
+﻿package com.example.hangangactivity.service;
 
 import java.time.LocalDateTime;
 import java.util.Locale;
@@ -38,24 +38,24 @@ public class AuthService {
         final String confirmPassword = request.getConfirmPassword();
 
         if (!StringUtils.hasText(username)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "?�이?��? ?�력??주세??");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "아이디를 입력해주세요.");
         }
 
         if (!StringUtils.hasText(name)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "�̸��� �Է����ּ���.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이름을 입력해주세요.");
         }
 
         if (!StringUtils.hasText(password) || password.length() < 6) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비�?번호??6???�상 ?�력??주세??");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호는 6자 이상 입력해주세요.");
         }
 
         if (confirmPassword == null || !password.equals(confirmPassword)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비�?번호 ?�인???�치?��? ?�습?�다.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호 확인이 일치하지 않습니다.");
         }
 
         CompanyUser existing = companyUserMapper.findByUsername(username);
         if (existing != null) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "?��? ?�용 중인 ?�이?�입?�다.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 사용 중인 아이디입니다.");
         }
 
         CompanyUser user = new CompanyUser();
@@ -75,16 +75,16 @@ public class AuthService {
         final String password = request.getPassword();
 
         if (!StringUtils.hasText(username) || !StringUtils.hasText(password)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "?�이?��? 비�?번호�?모두 ?�력??주세??");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "아이디와 비밀번호를 모두 입력해주세요.");
         }
 
         CompanyUser user = companyUserMapper.findByUsername(username);
         if (user == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "?�이???�는 비�?번호가 ?�바르�? ?�습?�다.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "?�이???�는 비�?번호가 ?�바르�? ?�습?�다.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
         user.setRole(normalizeRole(user.getRole()));
@@ -115,6 +115,7 @@ public class AuthService {
         return status.trim().toUpperCase(Locale.ROOT);
     }
 }
+
 
 
 

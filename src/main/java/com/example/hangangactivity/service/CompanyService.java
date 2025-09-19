@@ -1,4 +1,4 @@
-package com.example.hangangactivity.service;
+﻿package com.example.hangangactivity.service;
 
 import java.util.List;
 
@@ -40,7 +40,7 @@ public class CompanyService {
         }
 
         if (ROLE_ADMIN.equalsIgnoreCase(user.getRole())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "관리자 계정은 업체 등록이 필요하지 않습니다.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "관리자 계정에서는 업체 등록을 진행할 수 없습니다.");
         }
 
         String currentStatus = normalize(user.getMembershipStatus());
@@ -52,7 +52,7 @@ public class CompanyService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 승인 대기 중인 업체가 있습니다.");
         }
 
-        final String companyName = requireText(request.getCompanyName(), "업체 이름을 입력해 주세요.");
+        final String companyName = requireText(request.getCompanyName(), "업체명을 입력해 주세요.");
         final String businessNumber = requireText(request.getBusinessNumber(), "사업자등록번호를 입력해 주세요.");
         final String ceoName = requireText(request.getCeoName(), "대표자 이름을 입력해 주세요.");
         final String ceoContact = requireText(request.getCeoContact(), "대표자 연락처를 입력해 주세요.");
@@ -85,12 +85,12 @@ public class CompanyService {
         }
 
         if (user.getCompanyId() == null || !user.getCompanyId().equals(companyId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자와 업체 정보가 일치하지 않습니다.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자의 업체 정보가 일치하지 않습니다.");
         }
 
         String status = normalize(user.getMembershipStatus());
         if (!STATUS_PENDING.equalsIgnoreCase(status)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "승인 대기 중인 요청이 아닙니다.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "승인 대기 상태인 요청만 처리할 수 있습니다.");
         }
 
         companyMapper.updateVerification(companyId, true);
