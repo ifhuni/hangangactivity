@@ -1,4 +1,4 @@
-﻿package com.example.hangangactivity.config;
+package com.example.hangangactivity.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

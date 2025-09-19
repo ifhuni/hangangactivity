@@ -1,4 +1,4 @@
-﻿package com.example.hangangactivity.config;
+package com.example.hangangactivity.config;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;

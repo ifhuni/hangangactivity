@@ -1,4 +1,4 @@
-﻿package com.example.hangangactivity.service;
+package com.example.hangangactivity.service;
 
 import java.time.LocalDateTime;
 import java.util.Locale;

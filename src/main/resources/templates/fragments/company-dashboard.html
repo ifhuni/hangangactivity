@@ -1,4 +1,4 @@
-<!-- fragments/company-dashboard.html -->
+﻿<!-- fragments/company-dashboard.html -->
 <div th:fragment="companyDashboard">
   <section id="companyDashboardRoot"
            class="container"
@@ -6,8 +6,8 @@
            th:attr="data-role=${companyRole}, data-status=${companyStatus}, data-company-name=${companyName}">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <div>
-        <h3 class="fw-bold mb-0"><span th:text="${companyRole} == 'ADMIN' ? '시스템관리자' : (${companyName} ?: '업체')"></span> 대시보드</h3>
-        <div class="text-muted">안녕하세요, <span th:text="${companyUserName} ?: '담당자'">담당자</span> 님</div>
+        <h3 class="fw-bold mb-0"><span th:text="${companyRole} == 'ADMIN' ? '시스템 관리자' : (${companyName} ?: '업체')"></span> 대시보드</h3>
+        <div class="text-muted">안녕하세요, <span th:text="${companyUserName} ?: '담당자'">담당자</span>님</div>
       </div>
       <div>
         <button class="btn btn-outline-secondary btn-sm" onclick="loadPage(event, '/fragments/home')">홈으로</button>
@@ -15,10 +15,10 @@
     </div>
 
     <div id="pendingNotice" class="alert alert-warning d-none">
-      업체 승인 대기중입니다. 관리자 승인 후에 주요 기능을 사용할 수 있습니다.
+      업체 승인 대기 중입니다. 관리자 승인 완료 후 주요 기능을 이용할 수 있습니다.
     </div>
 
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-4" data-role="dashboard-summary">
       <div class="col-md-4">
         <div class="card shadow-sm rounded-4 p-3">
           <div class="small text-muted">등록된 활동</div>
@@ -47,27 +47,31 @@
       </div>
     </div>
 
-    <div id="adminApprovalSection" class="card shadow-sm rounded-4 p-3 d-none">
+    <div id="adminApprovalSection" class="card shadow-sm rounded-4 p-3">
       <div class="d-flex justify-content-between align-items-center mb-2">
-        <h5 class="fw-bold mb-0">승인 대기중인 업체</h5>
-        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnRefreshPending">새로고침</button>
+        <h5 class="fw-bold mb-0">승인 대기 업체</h5>
+        <div class="d-flex gap-2">
+          <div class="spinner-border spinner-border-sm text-secondary d-none" role="status" id="pendingSpinner">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btnRefreshPending">새로고침</button>
+        </div>
       </div>
-      <div class="small text-muted mb-2">승인 완료된 업체와 담당자 계정은 즉시 대시보드에서 사용할 수 있습니다.</div>
-      <div data-role="loading" class="text-center py-3">불러오는 중...</div>
+      <div class="small text-muted mb-2">승인이 완료되면 담당자 계정으로 대시보드를 이용할 수 있습니다.</div>
       <div data-role="error" class="alert alert-danger d-none"></div>
-      <div data-role="empty" class="alert alert-info d-none">승인 대기중인 업체가 없습니다.</div>
+      <div data-role="empty" class="alert alert-info d-none">승인 대기 중인 업체가 없습니다.</div>
       <div class="table-responsive d-none" data-role="table-wrapper">
         <table class="table table-sm align-middle mb-0">
           <thead class="table-light">
             <tr>
               <th scope="col">업체명</th>
-              <th scope="col">사업자번호</th>
+              <th scope="col">사업자등록번호</th>
               <th scope="col">대표자</th>
-              <th scope="col">담당자 계정</th>
-              <th scope="col" class="text-end">승인</th>
+              <th scope="col">담당자 정보</th>
+              <th scope="col" class="text-end" data-role="action-header">승인</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody data-role="pending-table-body"></tbody>
         </table>
       </div>
     </div>
@@ -81,33 +85,65 @@
 
     const role = (root.dataset.role || 'COMPANY').toUpperCase();
     const status = (root.dataset.status || '').toUpperCase();
+    const isAdmin = role === 'ADMIN';
 
     const pendingNotice = document.getElementById('pendingNotice');
     if (pendingNotice && role !== 'ADMIN' && status === 'PENDING') {
       pendingNotice.classList.remove('d-none');
     }
 
-    if (role === 'ADMIN') {
-      initAdminSection();
-    }
+    initPendingSection(isAdmin);
   })();
 
-  function initAdminSection(){
+  function initPendingSection(isAdmin){
     const section = document.getElementById('adminApprovalSection');
     if (!section) return;
 
-    const loadingEl = section.querySelector('[data-role="loading"]');
     const errorEl = section.querySelector('[data-role="error"]');
     const emptyEl = section.querySelector('[data-role="empty"]');
     const tableWrapper = section.querySelector('[data-role="table-wrapper"]');
-    const tbody = tableWrapper?.querySelector('tbody');
+    const tbody = section.querySelector('[data-role="pending-table-body"]');
     const refreshBtn = document.getElementById('btnRefreshPending');
+    const spinner = document.getElementById('pendingSpinner');
+    const actionHeader = section.querySelector('[data-role="action-header"]');
+
+    if (actionHeader) {
+      if (isAdmin) {
+        actionHeader.textContent = '승인';
+        actionHeader.classList.add('text-end');
+      } else {
+        actionHeader.textContent = '상태';
+        actionHeader.classList.remove('text-end');
+      }
+    }
 
     const setState = (state) => {
-      if (loadingEl) loadingEl.classList.toggle('d-none', state !== 'loading');
+      if (spinner) spinner.classList.toggle('d-none', state !== 'loading');
+      if (refreshBtn) refreshBtn.disabled = state === 'loading';
       if (errorEl) errorEl.classList.toggle('d-none', state !== 'error');
       if (emptyEl) emptyEl.classList.toggle('d-none', state !== 'empty');
       if (tableWrapper) tableWrapper.classList.toggle('d-none', state !== 'table');
+    };
+
+    const escapeHtml = (value) => {
+      if (value === null || value === undefined) return '';
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    };
+
+    const formatDateTime = (value) => {
+      if(!value) return '-';
+      try {
+        const date = new Date(value);
+        if(Number.isNaN(date.getTime())) return '-';
+        return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+      } catch(_err) {
+        return '-';
+      }
     };
 
     const renderRows = (items) => {
@@ -117,6 +153,12 @@
         const tr = document.createElement('tr');
         tr.dataset.userId = String(item.userId);
         tr.dataset.companyId = String(item.companyId);
+
+        const actionCell = isAdmin
+          ? `<button class="btn btn-sm btn-success" data-action="approve">승인</button>`
+          : `<span class="badge bg-warning text-dark">승인 대기</span>`;
+        const actionClass = isAdmin ? 'text-end' : 'text-start';
+
         tr.innerHTML = `
           <td>${escapeHtml(item.companyName)}</td>
           <td>${escapeHtml(item.businessNumber || '-')}</td>
@@ -126,19 +168,22 @@
           </td>
           <td>
             <div>${escapeHtml(item.username || '-')}</div>
-            <div class="text-muted small">신청일 ${formatDateTime(item.companyCreatedAt)}</div>
+            <div class="text-muted small">등록일: ${formatDateTime(item.companyCreatedAt)}</div>
           </td>
-          <td class="text-end">
-            <button class="btn btn-sm btn-success" data-action="approve">승인</button>
+          <td class="${actionClass}">
+            ${actionCell}
           </td>`;
         tbody.appendChild(tr);
       });
     };
 
-    const loadPending = async () => {
+    const loadPending = async (force = false) => {
+      const url = force ? `/api/company/pending-requests?t=${Date.now()}` : "/api/company/pending-requests";
+
       setState('loading');
-      try{
-        const res = await fetch('/api/company/pending-requests', { credentials: 'same-origin' });
+      if (errorEl) errorEl.textContent = '';
+      try {
+        const res = await fetch(url, { credentials: 'same-origin', cache: 'no-store' });
         if(!res.ok){
           throw new Error('목록을 불러오지 못했습니다. (HTTP ' + res.status + ')');
         }
@@ -149,8 +194,10 @@
         }
         renderRows(data);
         setState('table');
-      }catch(err){
-        if (errorEl) errorEl.textContent = err.message;
+      } catch (err) {
+        if (errorEl) {
+          errorEl.textContent = err.message || '목록을 가져오는 중 오류가 발생했습니다.';
+        }
         setState('error');
       }
     };
@@ -159,10 +206,13 @@
     loadPending();
 
     if (refreshBtn) {
-      refreshBtn.addEventListener('click', () => loadPending());
+      refreshBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        loadPending(true);
+      });
     }
 
-    if (tbody) {
+    if (isAdmin && tbody) {
       tbody.addEventListener('click', async (event) => {
         const btn = event.target.closest('button[data-action="approve"]');
         if (!btn) return;
@@ -186,31 +236,10 @@
           if (tbody.children.length === 0) {
             setState('empty');
           }
-        }catch(err){
+        } catch(err) {
           alert(err.message);
         }
       });
-    }
-  }
-
-  function escapeHtml(value){
-    if (value === null || value === undefined) return '';
-    return String(value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  function formatDateTime(value){
-    if(!value) return '-';
-    try{
-      const date = new Date(value);
-      if(Number.isNaN(date.getTime())) return '-';
-      return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
-    }catch(_err){
-      return '-';
     }
   }
 </script>

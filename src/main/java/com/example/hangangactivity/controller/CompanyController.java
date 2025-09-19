@@ -1,4 +1,4 @@
-﻿package com.example.hangangactivity.controller;
+package com.example.hangangactivity.controller;
 
 import java.util.List;
 

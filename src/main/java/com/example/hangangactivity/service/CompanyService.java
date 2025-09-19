@@ -1,6 +1,8 @@
-﻿package com.example.hangangactivity.service;
+package com.example.hangangactivity.service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -75,6 +77,15 @@ public class CompanyService {
 
     public List<PendingCompanyRequest> getPendingRequests() {
         return companyUserMapper.findPendingRequests();
+    }
+
+    public List<PendingCompanyRequest> getPendingRequestsForUser(Long userId) {
+        if (userId == null) {
+            return Collections.emptyList();
+        }
+        return companyUserMapper.findPendingRequests().stream()
+                .filter(item -> userId.equals(item.getUserId()))
+                .collect(Collectors.toList());
     }
 
     @Transactional
