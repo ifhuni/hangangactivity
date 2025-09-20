@@ -3,6 +3,8 @@ package com.example.hangangactivity.service;
 import java.time.LocalDateTime;
 import java.util.Locale;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -17,7 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class AuthService {
-
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
     private static final String ROLE_COMPANY = "COMPANY";
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String STATUS_UNASSIGNED = "UNASSIGNED";
@@ -99,10 +101,13 @@ public class AuthService {
 
     private String normalizeRole(String role) {
         if (!StringUtils.hasText(role)) {
+            log.debug("Role is empty or null, defaulting to COMPANY");
             return ROLE_COMPANY;
         }
         String upper = role.trim().toUpperCase(Locale.ROOT);
         if (ROLE_ADMIN.equals(upper)) {
+            
+            log.debug("Role is empty or null, defaulting to ADMIN");
             return ROLE_ADMIN;
         }
         return ROLE_COMPANY;

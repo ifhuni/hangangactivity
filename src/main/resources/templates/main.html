@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -6,15 +6,16 @@
     <title>Hanhang Activity</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/company-dashboard.js"></script>
     <style>
     </style>
 </head>
 
 <body>
-    <!-- 상단 고정 내비게이션 -->
+    <!-- ?곷떒 怨좎젙 ?대퉬寃뚯씠??-->
     <div th:replace="~{fragments/header :: navbar}"></div>
 
-    <!-- 비동기로 교체될 콘텐츠 영역 -->
+    <!-- 鍮꾨룞湲곕줈 援먯껜??肄섑뀗痢??곸뿭 -->
     <div id="content" class="container-main"></div>
 </body>
 <script>
@@ -29,7 +30,7 @@
         fetch(url, { credentials: 'same-origin' })
             .then(res => {
                 if (res.status === 401) {
-                    alert('로그인이 필요합니다.');
+                    alert('濡쒓렇?몄씠 ?꾩슂?⑸땲??');
                     if (url !== '/fragments/company-login') {
                         loadPage(null, '/fragments/company-login');
                     }
@@ -37,12 +38,12 @@
                 }
                 if (res.status === 403) {
                     return res.text().then(body => {
-                        alert(body || '접근 권한이 없습니다.');
+                        alert(body || '?묎렐 沅뚰븳???놁뒿?덈떎.');
                         throw new Error(AUTH_FORBIDDEN_ERROR);
                     });
                 }
                 if (!res.ok) {
-                    throw new Error('페이지를 불러오는 데 실패했습니다.');
+                    throw new Error('?섏씠吏瑜?遺덈윭?ㅻ뒗 ???ㅽ뙣?덉뒿?덈떎.');
                 }
                 return res.text();
             })
@@ -54,8 +55,11 @@
                 if (contentDiv) {
                     contentDiv.innerHTML = html;
                     executeInlineScripts(contentDiv);
+                    if (typeof window.initializeCompanyDashboard === "function") {
+                        window.initializeCompanyDashboard(contentDiv);
+                    }
                 } else {
-                    console.error('id="content" 요소가 없습니다.');
+                    console.error('id="content" ?붿냼媛 ?놁뒿?덈떎.');
                 }
             })
             .catch(err => {
@@ -83,7 +87,7 @@
         loadPage(null, '/fragments/home');
     });
 
-    // 비동기 콘텐츠용 모달 선택 시 활동 정보 채우기
+    // 鍮꾨룞湲?肄섑뀗痢좎슜 紐⑤떖 ?좏깮 ???쒕룞 ?뺣낫 梨꾩슦湲?
     document.addEventListener('click', function (e) {
         const btn = e.target.closest('[data-bs-target="#reservationModal"][data-activity-id]');
         if (!btn) return;
@@ -127,19 +131,19 @@
         }
     });
 
-    // 인증코드 전송 (임시 처리)
+    // ?몄쬆肄붾뱶 ?꾩넚 (?꾩떆 泥섎━)
     document.addEventListener('click', function (e) {
         const btn = e.target.closest('#sendCodeBtn');
         if (!btn) return;
         const wrap = btn.closest('.modal') || document;
         const emailInput = wrap.querySelector('#email');
         const email = emailInput ? emailInput.value : '';
-        if (!email) return alert('이메일을 입력해 주세요.');
-        alert('인증코드를 이메일로 보냈습니다.');
+        if (!email) return alert('?대찓?쇱쓣 ?낅젰??二쇱꽭??');
+        alert('?몄쬆肄붾뱶瑜??대찓?쇰줈 蹂대깉?듬땲??');
     });
 
-    // 예약 제출 (임시 처리)
-    // 참가 인원 +/- 버튼 동작
+    // ?덉빟 ?쒖텧 (?꾩떆 泥섎━)
+    // 李멸? ?몄썝 +/- 踰꾪듉 ?숈옉
     document.addEventListener('click', function (e) {
         const minusBtn = e.target.closest('#btnPeopleMinus');
         const plusBtn = e.target.closest('#btnPeoplePlus');
@@ -172,7 +176,7 @@
         const peopleCount = parseInt(form.querySelector('#peopleCount')?.value || '1', 10);
 
         console.log({ activityId, name, passport, email, emailCode, peopleCount });
-        alert('예약이 완료되었습니다.');
+        alert('?덉빟???꾨즺?섏뿀?듬땲??');
         if (modalEl) {
             const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
             modal.hide();
@@ -181,3 +185,6 @@
 </script>
 
 </html>
+
+
+
