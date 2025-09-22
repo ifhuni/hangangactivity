@@ -31,7 +31,7 @@
 ## 실행 방법
 
 1. **Docker Desktop 설치**
-   - [Docker 공식 사이트](https://www.docker.com/products/docker-desktop/)에서 설치
+   - [Docker 공식 사이트](https://www.docker.com/products/docker-desktop/)에서 설치 
 
 2. **프로젝트 폴더로 이동**
    ```
