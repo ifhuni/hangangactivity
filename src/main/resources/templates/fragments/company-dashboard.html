@@ -79,7 +79,36 @@
     </div>
 
 
-    <div id="adminApprovalSection" class="card shadow-sm rounded-4 p-3" th:classappend="${#strings.equalsIgnoreCase(companyRole, 'ADMIN')} ? '' : ' d-none'">
+    
+    <div id="reservationPendingSection" class="card shadow-sm rounded-4 p-3 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="fw-bold mb-0">예약 승인 대기</h5>
+        <div class="d-flex gap-2">
+          <div class="spinner-border spinner-border-sm text-secondary d-none" role="status" data-role="reservations-spinner">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-role="reservations-refresh">새로고침</button>
+        </div>
+      </div>
+      <div class="small text-muted mb-2">승인 대기 중인 예약을 확인하고 처리할 수 있습니다.</div>
+      <div class="alert alert-danger d-none" data-role="reservations-error"></div>
+      <div class="alert alert-success d-none" data-role="reservations-success">예약 상태가 업데이트되었습니다.</div>
+      <div class="alert alert-info d-none" data-role="reservations-empty">승인 대기 중인 예약이 없습니다.</div>
+      <div class="table-responsive d-none" data-role="reservations-table-wrapper">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">예약자</th>
+              <th scope="col">활동</th>
+              <th scope="col">요청 정보</th>
+              <th scope="col" class="text-end">처리</th>
+            </tr>
+          </thead>
+          <tbody data-role="reservations-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+<div id="adminApprovalSection" class="card shadow-sm rounded-4 p-3" th:classappend="${#strings.equalsIgnoreCase(companyRole, 'ADMIN')} ? '' : ' d-none'">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <h5 class="fw-bold mb-0">승인 대기 업체</h5>
         <div class="d-flex gap-2">
@@ -192,6 +221,19 @@
 
   <!-- 스크립트: 활동 목록 로드 & 활동 등록 -->
   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const now = new Date();
+      // yyyy-MM-ddTHH:mm 형식으로 변환
+      const pad = n => String(n).padStart(2, '0');
+      const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+      // 시작/종료 일시 input에 값 설정
+      const startInput = document.querySelector('input[name="startAt"]');
+      const endInput   = document.querySelector('input[name="endAt"]');
+
+      if (startInput) startInput.value = todayStr;
+      if (endInput)   endInput.value   = todayStr;
+    });
     (function () {
       const root = document.getElementById('companyDashboardRoot');
       const companyId = root?.dataset.companyId;
@@ -267,6 +309,19 @@
         return `${k(s)} ~ ${k(e)}`.trim();
       }
 
+      function formatDateTimeValue(value) {
+        if (!value) return '';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return '';
+        }
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        const hh = String(date.getHours()).padStart(2, '0');
+        const min = String(date.getMinutes()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+      }
       function escapeHtml(str) {
         return String(str || '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
       }
@@ -320,6 +375,181 @@
           activityCreateSpinner.classList.add('d-none');
         }
       });
+      const reservationSection = document.getElementById('reservationPendingSection');
+      if (reservationSection) {
+        const reservationsSpinner = reservationSection.querySelector('[data-role="reservations-spinner"]');
+        const reservationsError = reservationSection.querySelector('[data-role="reservations-error"]');
+        const reservationsSuccess = reservationSection.querySelector('[data-role="reservations-success"]');
+        const reservationsEmpty = reservationSection.querySelector('[data-role="reservations-empty"]');
+        const reservationsTableWrapper = reservationSection.querySelector('[data-role="reservations-table-wrapper"]');
+        const reservationsTbody = reservationSection.querySelector('[data-role="reservations-table-body"]');
+        const reservationsRefresh = reservationSection.querySelector('[data-role="reservations-refresh"]');
+
+        const canManageReservations = role === 'ADMIN' || status === 'APPROVED';
+        if (!canManageReservations) {
+          reservationSection.classList.add('d-none');
+        } else {
+          const buildReservationsUrl = (force) => {
+            const params = [];
+            if (companyId) params.push(`companyId=${encodeURIComponent(companyId)}`);
+            if (force) params.push(`t=${Date.now()}`);
+            return `/api/reservations/pending${params.length ? '?' + params.join('&') : ''}`;
+          };
+
+          const hideReservationSuccess = () => {
+            if (reservationsSuccess) {
+              reservationsSuccess.classList.add('d-none');
+              reservationsSuccess.textContent = '예약 상태가 업데이트되었습니다.';
+            }
+          };
+
+          const showReservationSuccess = (message) => {
+            if (reservationsSuccess) {
+              reservationsSuccess.textContent = message;
+              reservationsSuccess.classList.remove('d-none');
+            }
+          };
+
+          const renderReservations = (items) => {
+            if (!reservationsTbody) return;
+            reservationsTbody.innerHTML = '';
+            items.forEach((item) => {
+              const row = document.createElement('tr');
+              row.dataset.reservationId = String(item.id);
+              row.innerHTML = `
+                <td>
+                  <div>${escapeHtml(item.touristName || '')}</div>
+                  <div class="text-muted small">${escapeHtml(item.touristEmail || '')}</div>
+                  <div class="text-muted small">${escapeHtml(item.touristNationality || '')}</div>
+                </td>
+                <td>
+                  <div>${escapeHtml(item.activityTitle || '')}</div>
+                  <div class="text-muted small">${formatInterval(item.startAt, item.endAt)}</div>
+                </td>
+                <td>
+                  <div>${formatDateTimeValue(item.createdAt)}</div>
+                  ${item.specialRequest ? `<div class="text-muted small">${escapeHtml(item.specialRequest)}</div>` : ''}
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-success" data-action="approve">승인</button>
+                    <button type="button" class="btn btn-outline-danger" data-action="reject">거절</button>
+                  </div>
+                </td>
+              `;
+              reservationsTbody.appendChild(row);
+            });
+          };
+
+          const loadReservations = async (force = false) => {
+            if (!reservationsSpinner || !reservationsError || !reservationsEmpty || !reservationsTableWrapper) {
+              return;
+            }
+            hideReservationSuccess();
+            reservationsSpinner.classList.remove('d-none');
+            reservationsError.classList.add('d-none');
+            reservationsEmpty.classList.add('d-none');
+            reservationsTableWrapper.classList.add('d-none');
+            if (reservationsTbody) {
+              reservationsTbody.innerHTML = '';
+            }
+            if (reservationsRefresh) {
+              reservationsRefresh.disabled = true;
+            }
+
+            try {
+              const res = await fetch(buildReservationsUrl(force), { credentials: 'same-origin', cache: 'no-store' });
+              if (!res.ok) {
+                throw new Error('예약 목록을 불러오지 못했습니다.');
+              }
+              const data = await res.json();
+              if (!Array.isArray(data) || data.length === 0) {
+                reservationsEmpty.classList.remove('d-none');
+                return;
+              }
+              renderReservations(data);
+              reservationsTableWrapper.classList.remove('d-none');
+            } catch (err) {
+              if (reservationsError) {
+                reservationsError.textContent = err.message || '예약 조회 중 오류가 발생했습니다.';
+                reservationsError.classList.remove('d-none');
+              }
+            } finally {
+              if (reservationsSpinner) {
+                reservationsSpinner.classList.add('d-none');
+              }
+              if (reservationsRefresh) {
+                reservationsRefresh.disabled = false;
+              }
+            }
+          };
+
+          reservationsRefresh?.addEventListener('click', (event) => {
+            event.preventDefault();
+            loadReservations(true);
+          });
+
+          reservationsTbody?.addEventListener('click', async (event) => {
+            const btn = event.target.closest('button[data-action]');
+            if (!btn) return;
+            const row = btn.closest('tr');
+            if (!row) return;
+            const reservationId = row.dataset.reservationId;
+            if (!reservationId) return;
+
+            const action = btn.dataset.action;
+            let endpoint;
+            let confirmMessage;
+            let successMessage;
+            if (action === 'approve') {
+              endpoint = `/api/reservations/${encodeURIComponent(reservationId)}/approve`;
+              confirmMessage = '해당 예약을 승인하시겠습니까?';
+              successMessage = '예약을 승인했습니다.';
+            } else if (action === 'reject') {
+              endpoint = `/api/reservations/${encodeURIComponent(reservationId)}/reject`;
+              confirmMessage = '해당 예약을 거절하시겠습니까?';
+              successMessage = '예약을 거절했습니다.';
+            } else {
+              return;
+            }
+
+            if (!window.confirm(confirmMessage)) {
+              return;
+            }
+
+            hideReservationSuccess();
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+            try {
+              const res = await fetch(endpoint, { method: 'POST', credentials: 'same-origin' });
+              if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || '예약 상태를 변경하지 못했습니다.');
+              }
+              row.remove();
+              if (!reservationsTbody || reservationsTbody.children.length === 0) {
+                reservationsTableWrapper?.classList.add('d-none');
+                reservationsEmpty?.classList.remove('d-none');
+              }
+              showReservationSuccess(successMessage);
+            } catch (err) {
+              btn.disabled = false;
+              btn.innerHTML = originalHtml;
+              window.alert(err.message || '예약 상태 변경 중 오류가 발생했습니다.');
+            }
+          });
+
+          loadReservations();
+        }
+      }
     })();
   </script>
 </div>
+
+
+
+
+
+

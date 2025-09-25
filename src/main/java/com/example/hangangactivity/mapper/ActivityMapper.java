@@ -20,4 +20,10 @@ public interface ActivityMapper {
             @Param("endDate") LocalDate endDate,
             @Param("activityType") String activityType,
             @Param("peopleCount") Integer peopleCount);
+
+    List<Activity> findByCompanyId(@Param("companyId") Long companyId);
+
+    Activity findById(@Param("id") Long id);
+
+    void insert(Activity activity);
 }

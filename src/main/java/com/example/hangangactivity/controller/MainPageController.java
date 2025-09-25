@@ -34,6 +34,7 @@ public class MainPageController {
     String status = session != null ? (String) session.getAttribute(AuthController.SESSION_COMPANY_MEMBERSHIP_STATUS) : null;
     String sessionCompanyName = session != null ? (String) session.getAttribute(AuthController.SESSION_COMPANY_NAME) : null;
     String sessionCompanyUserName = session != null ? (String) session.getAttribute(AuthController.SESSION_COMPANY_USER_NAME) : null;
+    Long sessionCompanyId = session != null ? (Long) session.getAttribute(AuthController.SESSION_COMPANY_ID) : null;
 
     String normalizedRole = role != null ? role.trim().toUpperCase(Locale.ROOT) : "COMPANY";
     String normalizedStatus = status != null ? status.trim().toUpperCase(Locale.ROOT) : "UNASSIGNED";
@@ -45,13 +46,14 @@ public class MainPageController {
       effectiveName = companyNameParam.trim();
     }
     if (effectiveName == null || effectiveName.isBlank()) {
-      effectiveName = "업체";
+      effectiveName = "?낆껜";
     }
 
     model.addAttribute("companyRole", normalizedRole);
     model.addAttribute("companyStatus", normalizedStatus);
     model.addAttribute("companyName", effectiveName);
     model.addAttribute("companyUserName", sessionCompanyUserName);
+    model.addAttribute("companyId", sessionCompanyId);
     return "fragments/company-dashboard :: companyDashboard";
   }
 
@@ -65,3 +67,4 @@ public class MainPageController {
     return "fragments/company-register :: companyRegister";
   }
 }
+

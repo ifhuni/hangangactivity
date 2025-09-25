@@ -1,0 +1,152 @@
+package com.example.hangangactivity.controller;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.example.hangangactivity.dto.ActivityCreateRequest;
+import com.example.hangangactivity.dto.ActivityResponse;
+import com.example.hangangactivity.service.ActivityService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
+@RestController
+@RequestMapping("/api")
+public class ActivityController {
+
+    private static final Logger log = LoggerFactory.getLogger(ActivityController.class);
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+    private final ActivityService activityService;
+
+    public ActivityController(ActivityService activityService) {
+        this.activityService = activityService;
+    }
+
+    @GetMapping("/companies/{companyId}/activities")
+    public ResponseEntity<List<ActivityResponse>> listByCompany(@PathVariable("companyId") Long companyId,
+                                                                HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        ensureAuthenticated(session);
+
+        String role = (String) session.getAttribute(AuthController.SESSION_COMPANY_ROLE);
+        Long sessionCompanyId = (Long) session.getAttribute(AuthController.SESSION_COMPANY_ID);
+        if (!isAdmin(role) && (sessionCompanyId == null || !sessionCompanyId.equals(companyId))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only access your company activities.");
+        }
+
+        return ResponseEntity.ok(activityService.listActivitiesForCompany(companyId));
+    }
+
+    @GetMapping("/activities/mine")
+    public ResponseEntity<List<ActivityResponse>> listMine(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        ensureAuthenticated(session);
+
+        Long userId = (Long) session.getAttribute(AuthController.SESSION_COMPANY_USER_ID);
+        return ResponseEntity.ok(activityService.listActivitiesForUser(userId));
+    }
+
+    @PostMapping(value = "/activities", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ActivityResponse> createActivity(@RequestParam("title") String title,
+                                                           @RequestParam(value = "category", required = false) String category,
+                                                           @RequestParam(value = "description", required = false) String description,
+                                                           @RequestParam("location") String location,
+                                                           @RequestParam(value = "capacity", required = false) String capacity,
+                                                           @RequestParam("startAt") String startAt,
+                                                           @RequestParam("endAt") String endAt,
+                                                           @RequestParam(value = "price", required = false) String price,
+                                                           @RequestParam(value = "status", required = false) String status,
+                                                           @RequestParam(value = "companyId", required = false) String companyIdParam,
+                                                           @RequestParam(value = "image", required = false) MultipartFile image,
+                                                           HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        ensureAuthenticated(session);
+
+        Long userId = (Long) session.getAttribute(AuthController.SESSION_COMPANY_USER_ID);
+        String role = (String) session.getAttribute(AuthController.SESSION_COMPANY_ROLE);
+
+        Long companyId = null;
+        if (StringUtils.hasText(companyIdParam)) {
+            try {
+                companyId = Long.valueOf(companyIdParam.trim());
+            } catch (NumberFormatException ex) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company id must be numeric.");
+            }
+        }
+
+        Integer capacityValue = parseInteger(capacity, "capacity");
+        Integer priceValue = parseInteger(price, "price");
+        LocalDateTime startAtValue = parseDateTime(startAt, "startAt");
+        LocalDateTime endAtValue = parseDateTime(endAt, "endAt");
+
+        if (image != null && !image.isEmpty()) {
+            log.debug("Activity image upload is not yet supported. Ignoring file: {}", image.getOriginalFilename());
+        }
+
+        ActivityCreateRequest createRequest = new ActivityCreateRequest(
+                companyId,
+                title,
+                category,
+                description,
+                location,
+                capacityValue,
+                startAtValue,
+                endAtValue,
+                priceValue,
+                status
+        );
+
+        ActivityResponse response = activityService.createActivity(userId, role, createRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    private void ensureAuthenticated(HttpSession session) {
+        if (session == null || session.getAttribute(AuthController.SESSION_COMPANY_USER_ID) == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login is required.");
+        }
+    }
+
+    private boolean isAdmin(String role) {
+        return role != null && "ADMIN".equalsIgnoreCase(role);
+    }
+
+    private Integer parseInteger(String value, String fieldName) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(value.trim());
+        } catch (NumberFormatException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, fieldName + " must be numeric.");
+        }
+    }
+
+    private LocalDateTime parseDateTime(String value, String fieldName) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+        try {
+            return LocalDateTime.parse(value.trim(), DATE_TIME_FORMATTER);
+        } catch (DateTimeParseException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, fieldName + " must be a valid ISO date-time (yyyy-MM-dd'T'HH:mm).");
+        }
+    }
+}

@@ -58,6 +58,9 @@ CREATE TABLE public.activities (
     "location" varchar(255) NOT NULL,
     activity_type varchar(10) NOT NULL,
     max_participants int4 NOT NULL,
+    status varchar(20) NOT NULL DEFAULT 'DRAFT',
+    price int4,
+    image_url varchar(255),
     created_at timestamp DEFAULT CURRENT_TIMESTAMP,
     activity_date date NOT NULL DEFAULT CURRENT_DATE,
     start_time time NOT NULL DEFAULT '09:00:00',
@@ -71,7 +74,7 @@ COMMENT ON COLUMN public.activities.title IS '활동 제목';
 COMMENT ON COLUMN public.activities.description IS '활동 설명';
 COMMENT ON COLUMN public.activities.location IS '활동 장소';
 COMMENT ON COLUMN public.activities.activity_type IS '활동 유형(육상/수상/공중)';
-COMMENT ON COLUMN public.activities.max_participants IS '최대 참여 인원';
+COMMENT ON COLUMN public.activities.max_participants IS '최대 수용 인원';
 COMMENT ON COLUMN public.activities.created_at IS '생성 일시';
 COMMENT ON COLUMN public.activities.activity_date IS '활동 일자';
 COMMENT ON COLUMN public.activities.start_time IS '시작 시간';
@@ -229,3 +232,6 @@ INSERT INTO public.company_users
 (id, username, "name", password_hash, created_at, company_id, "role", membership_status)
 VALUES
 (1, 'admin', '관리자', '$2a$10$HLpSuVhpMcK.0l/aRz1QUuHnytQHKeFCvobb4FihR5kBADnmDqrwC', '2025-09-19 13:46:34.025', NULL, 'ADMIN', 'APPROVED');
+
+
+

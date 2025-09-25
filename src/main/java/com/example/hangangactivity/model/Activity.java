@@ -10,12 +10,16 @@ public class Activity {
     private String title;
     private String description;
     private String location;
+    private String activityType;
     private Integer maxParticipants;
     private Integer currentParticipants;
     private LocalDateTime createdAt;
     private LocalDate activityDate;
     private LocalTime startTime;
     private LocalTime endTime;
+    private Integer price;
+    private String status;
+    private String imageUrl;
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
@@ -31,6 +35,9 @@ public class Activity {
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+
+    public String getActivityType() { return activityType; }
+    public void setActivityType(String activityType) { this.activityType = activityType; }
 
     public Integer getMaxParticipants() { return maxParticipants; }
     public void setMaxParticipants(Integer maxParticipants) { this.maxParticipants = maxParticipants; }
@@ -49,4 +56,13 @@ public class Activity {
 
     public LocalTime getEndTime() { return endTime; }
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
+
+    public Integer getPrice() { return price; }
+    public void setPrice(Integer price) { this.price = price; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }

@@ -1,32 +1,43 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.hangangactivity.mapper.ActivityMapper">
 
+  <sql id="activityColumns">
+    a.id,
+    a.company_id,
+    a.title,
+    a.description,
+    a."location",
+    a.activity_type,
+    a.max_participants,
+    a.created_at,
+    a.activity_date,
+    a.start_time,
+    a.end_time,
+    a.price,
+    a.status,
+    a.image_url,
+    (
+      SELECT COALESCE(COUNT(1), 0)
+      FROM public.reservations r
+      WHERE r.activity_id = a.id
+        AND r.status = 'confirmed'
+    ) AS current_participants
+  </sql>
+
   <select id="findAll" resultType="com.example.hangangactivity.model.Activity">
     SELECT 
-      a.id, a.company_id, a.title, a.description, a."location", a.max_participants, a.created_at, a.activity_date, a.start_time, a.end_time,
-      (
-        SELECT COALESCE(COUNT(1), 0)
-        FROM public.reservations r
-        WHERE r.activity_id = a.id
-          AND r.status = 'confirmed'
-      ) AS current_participants
+      <include refid="activityColumns" />
     FROM public.activities a
     ORDER BY a.created_at DESC
   </select>
 
   <select id="findByRegion" parameterType="string" resultType="com.example.hangangactivity.model.Activity">
     SELECT 
-      a.id, a.company_id, a.title, a.description, a."location", a.max_participants, a.created_at, a.activity_date, a.start_time, a.end_time,
-      (
-        SELECT COALESCE(COUNT(1), 0)
-        FROM public.reservations r
-        WHERE r.activity_id = a.id
-          AND r.status = 'confirmed'
-      ) AS current_participants
+      <include refid="activityColumns" />
     FROM public.activities a
     <where>
       <if test="region != null and region != ''">
@@ -38,13 +49,7 @@
 
   <select id="findByFilter" resultType="com.example.hangangactivity.model.Activity">
     SELECT 
-      a.id, a.company_id, a.title, a.description, a."location", a.max_participants, a.created_at, a.activity_date, a.start_time, a.end_time,
-      (
-        SELECT COALESCE(COUNT(1), 0)
-        FROM public.reservations r
-        WHERE r.activity_id = a.id
-          AND r.status = 'confirmed'
-      ) AS current_participants
+      <include refid="activityColumns" />
     FROM public.activities a
     <where>
       <if test="region != null and region != ''">
@@ -75,5 +80,51 @@
     </where>
     ORDER BY a.created_at DESC
   </select>
+
+  <select id="findByCompanyId" parameterType="long" resultType="com.example.hangangactivity.model.Activity">
+    SELECT
+      <include refid="activityColumns" />
+    FROM public.activities a
+    WHERE a.company_id = #{companyId}
+    ORDER BY a.created_at DESC
+  </select>
+
+  <select id="findById" parameterType="long" resultType="com.example.hangangactivity.model.Activity">
+    SELECT
+      <include refid="activityColumns" />
+    FROM public.activities a
+    WHERE a.id = #{id}
+  </select>
+
+  <insert id="insert" parameterType="com.example.hangangactivity.model.Activity"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO public.activities (
+      company_id,
+      title,
+      description,
+      "location",
+      activity_type,
+      max_participants,
+      activity_date,
+      start_time,
+      end_time,
+      status,
+      price,
+      image_url
+    ) VALUES (
+      #{companyId},
+      #{title},
+      #{description},
+      #{location},
+      #{activityType},
+      #{maxParticipants},
+      #{activityDate},
+      #{startTime},
+      #{endTime},
+      #{status},
+      #{price},
+      #{imageUrl}
+    )
+  </insert>
 
 </mapper>
