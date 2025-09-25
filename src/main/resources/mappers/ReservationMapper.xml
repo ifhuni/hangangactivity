@@ -62,6 +62,21 @@
       AND r.status = 'pending'
   </select>
 
+  <insert id="insert" parameterType="com.example.hangangactivity.model.Reservation"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO public.reservations (
+      activity_id,
+      tourist_id,
+      status,
+      special_request
+    ) VALUES (
+      #{activityId},
+      #{touristId},
+      COALESCE(#{status}, 'pending'),
+      #{specialRequest}
+    )
+  </insert>
+
   <update id="updateStatus">
     UPDATE public.reservations
     SET status = #{status}

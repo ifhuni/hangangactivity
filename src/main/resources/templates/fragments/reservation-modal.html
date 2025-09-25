@@ -1,4 +1,4 @@
-<!-- fragments/reservation-modal.html -->
+﻿<!-- fragments/reservation-modal.html -->
 <div th:fragment="reservationModal">
   <div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="reservationModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -13,10 +13,15 @@
             <div><strong>활동명:</strong> <span data-field="title">-</span></div>
             <div><strong>위치:</strong> <span data-field="location">-</span></div>
             <div><strong>일시:</strong> <span data-field="date">-</span> <span data-field="time"></span></div>
+            <div class="mt-1"><strong>잔여좌석:</strong> <span data-field="left">-</span>명</div>
           </div>
 
-          <form id="reservationForm">
+          <form id="reservationForm" novalidate>
             <input type="hidden" id="activityId" name="activityId" value="">
+            <input type="hidden" id="availableSeats" value="0">
+
+            <div class="alert alert-danger d-none" data-role="reservation-error"></div>
+            <div class="alert alert-success d-none" data-role="reservation-success"></div>
 
             <div class="mb-3">
               <label for="name" class="form-label">이름</label>
@@ -29,26 +34,43 @@
             </div>
 
             <div class="mb-3">
-              <label for="email" class="form-label">이메일</label>
-              <div class="input-group">
-                <input type="email" class="form-control" id="email" required>
-                <button type="button" class="btn btn-outline-secondary" id="sendCodeBtn">인증코드 전송</button>
-              </div>
+              <label for="nationality" class="form-label">국적</label>
+              <input type="text" class="form-control" id="nationality" placeholder="예: Korea" required>
             </div>
 
             <div class="mb-3">
-              <label for="emailCode" class="form-label">인증코드</label>
-              <input type="text" class="form-control" id="emailCode" required>
+              <label for="birthdate" class="form-label">생년월일</label>
+              <input type="date" class="form-control" id="birthdate" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="gender" class="form-label">성별</label>
+              <select class="form-select" id="gender">
+                <option value="">선택 안 함</option>
+                <option value="M">남성</option>
+                <option value="F">여성</option>
+                <option value="Other">기타</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="email" class="form-label">이메일</label>
+              <input type="email" class="form-control" id="email" required>
             </div>
 
             <div class="mb-3">
               <label for="peopleCount" class="form-label">인원 선택</label>
               <div class="input-group">
+                <button class="btn btn-outline-secondary" type="button" id="btnPeopleMinus">-</button>
                 <input type="number" class="form-control text-center" id="peopleCount" name="peopleCount" min="1" value="1" required>
                 <button class="btn btn-outline-secondary" type="button" id="btnPeoplePlus">+</button>
-                <button class="btn btn-outline-secondary" type="button" id="btnPeopleMinus">-</button>
               </div>
-              <div class="form-text">남은자리: <span data-field="left">-</span>명</div>
+              <div class="form-text">최대 예약 가능 인원: <span data-field="left">-</span>명</div>
+            </div>
+
+            <div class="mb-0">
+              <label for="specialRequest" class="form-label">요청사항 (선택)</label>
+              <textarea class="form-control" id="specialRequest" rows="3" placeholder="알레르기, 준비물 등"></textarea>
             </div>
 
           </form>
@@ -61,4 +83,3 @@
     </div>
   </div>
 </div>
-

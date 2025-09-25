@@ -1,6 +1,5 @@
 ﻿<!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <meta charset="UTF-8">
     <title>Hanhang Activity</title>
@@ -10,12 +9,11 @@
     <style>
     </style>
 </head>
-
 <body>
-    <!-- ?곷떒 怨좎젙 ?대퉬寃뚯씠??-->
+    <!-- 상단 고정 내비게이션 -->
     <div th:replace="~{fragments/header :: navbar}"></div>
 
-    <!-- 鍮꾨룞湲곕줈 援먯껜??肄섑뀗痢??곸뿭 -->
+    <!-- 비동기로 교체될 콘텐츠 영역 -->
     <div id="content" class="container-main"></div>
 </body>
 <script>
@@ -30,7 +28,7 @@
         fetch(url, { credentials: 'same-origin' })
             .then(res => {
                 if (res.status === 401) {
-                    alert('濡쒓렇?몄씠 ?꾩슂?⑸땲??');
+                    alert('로그인이 필요합니다.');
                     if (url !== '/fragments/company-login') {
                         loadPage(null, '/fragments/company-login');
                     }
@@ -38,12 +36,12 @@
                 }
                 if (res.status === 403) {
                     return res.text().then(body => {
-                        alert(body || '?묎렐 沅뚰븳???놁뒿?덈떎.');
+                        alert(body || '접근 권한이 없습니다.');
                         throw new Error(AUTH_FORBIDDEN_ERROR);
                     });
                 }
                 if (!res.ok) {
-                    throw new Error('?섏씠吏瑜?遺덈윭?ㅻ뒗 ???ㅽ뙣?덉뒿?덈떎.');
+                    throw new Error('페이지를 불러오는데 실패했습니다.');
                 }
                 return res.text();
             })
@@ -55,11 +53,11 @@
                 if (contentDiv) {
                     contentDiv.innerHTML = html;
                     executeInlineScripts(contentDiv);
-                    if (typeof window.initializeCompanyDashboard === "function") {
+                    if (typeof window.initializeCompanyDashboard === 'function') {
                         window.initializeCompanyDashboard(contentDiv);
                     }
                 } else {
-                    console.error('id="content" ?붿냼媛 ?놁뒿?덈떎.');
+                    console.error('id="content" 요소가 없습니다.');
                 }
             })
             .catch(err => {
@@ -71,7 +69,7 @@
 
     function executeInlineScripts(container) {
         if (!container) return;
-        
+
         const scripts = container.querySelectorAll('script');
         scripts.forEach(oldScript => {
             const newScript = document.createElement('script');
@@ -87,7 +85,7 @@
         loadPage(null, '/fragments/home');
     });
 
-    // 鍮꾨룞湲?肄섑뀗痢좎슜 紐⑤떖 ?좏깮 ???쒕룞 ?뺣낫 梨꾩슦湲?
+    // 예약 모달에 활동 정보 채우기
     document.addEventListener('click', function (e) {
         const btn = e.target.closest('[data-bs-target="#reservationModal"][data-activity-id]');
         if (!btn) return;
@@ -106,17 +104,30 @@
         const left = Math.max(0, (isNaN(max) ? 0 : max) - (isNaN(current) ? 0 : current));
         const timeText = (start || end) ? ` (${start || ''}${end ? ' ~ ' + end : ''})` : '';
 
-        const setText = (sel, val) => { const el = modalEl.querySelector(sel); if (el) el.textContent = val; };
+        const setText = (sel, val) => {
+            const targets = modalEl.querySelectorAll(sel);
+            targets.forEach(el => { el.textContent = val; });
+        };
         setText('[data-field="title"]', title);
         setText('[data-field="location"]', location);
         setText('[data-field="date"]', date);
         setText('[data-field="time"]', timeText);
-        setText('[data-field="max"]', isNaN(max) ? '-' : String(max));
-        setText('[data-field="current"]', isNaN(current) ? '-' : String(current));
         setText('[data-field="left"]', String(left));
+
+        const form = modalEl.querySelector('#reservationForm');
+        if (form) {
+            form.reset();
+            const errorBox = form.querySelector('[data-role="reservation-error"]');
+            const successBox = form.querySelector('[data-role="reservation-success"]');
+            if (errorBox) { errorBox.classList.add('d-none'); errorBox.textContent = ''; }
+            if (successBox) { successBox.classList.add('d-none'); successBox.textContent = ''; }
+        }
 
         const hiddenId = modalEl.querySelector('#activityId');
         if (hiddenId) hiddenId.value = activityId;
+
+        const availableInput = modalEl.querySelector('#availableSeats');
+        if (availableInput) availableInput.value = String(left);
 
         const peopleInput = modalEl.querySelector('#peopleCount');
         if (peopleInput) {
@@ -131,27 +142,14 @@
         }
     });
 
-    // ?몄쬆肄붾뱶 ?꾩넚 (?꾩떆 泥섎━)
-    document.addEventListener('click', function (e) {
-        const btn = e.target.closest('#sendCodeBtn');
-        if (!btn) return;
-        const wrap = btn.closest('.modal') || document;
-        const emailInput = wrap.querySelector('#email');
-        const email = emailInput ? emailInput.value : '';
-        if (!email) return alert('?대찓?쇱쓣 ?낅젰??二쇱꽭??');
-        alert('?몄쬆肄붾뱶瑜??대찓?쇰줈 蹂대깉?듬땲??');
-    });
-
-    // ?덉빟 ?쒖텧 (?꾩떆 泥섎━)
-    // 李멸? ?몄썝 +/- 踰꾪듉 ?숈옉
+    // 예약 인원 +/- 버튼
     document.addEventListener('click', function (e) {
         const minusBtn = e.target.closest('#btnPeopleMinus');
         const plusBtn = e.target.closest('#btnPeoplePlus');
         if (!minusBtn && !plusBtn) return;
         const wrap = e.target.closest('.modal') || document;
         const input = wrap.querySelector('#peopleCount');
-        if (!input) return;
-        if (input.disabled) return;
+        if (!input || input.disabled) return;
         const max = parseInt(input.max || '9999', 10);
         const min = parseInt(input.min || '1', 10);
         let val = parseInt(input.value || String(min), 10);
@@ -161,30 +159,115 @@
         input.value = String(val);
     });
 
-    document.addEventListener('submit', function (e) {
+    document.addEventListener('submit', async function (e) {
         const form = e.target;
         if (!(form instanceof HTMLFormElement)) return;
         if (form.id !== 'reservationForm') return;
         e.preventDefault();
 
         const modalEl = document.getElementById('reservationModal');
-        const name = form.querySelector('#name')?.value;
-        const passport = form.querySelector('#passport')?.value;
-        const email = form.querySelector('#email')?.value;
-        const emailCode = form.querySelector('#emailCode')?.value;
-        const activityId = form.querySelector('#activityId')?.value;
+        const submitBtn = modalEl?.querySelector('button[type="submit"]');
+        const errorBox = form.querySelector('[data-role="reservation-error"]');
+        const successBox = form.querySelector('[data-role="reservation-success"]');
+        if (errorBox) { errorBox.classList.add('d-none'); errorBox.textContent = ''; }
+        if (successBox) { successBox.classList.add('d-none'); successBox.textContent = ''; }
+
+        const activityId = form.querySelector('#activityId')?.value?.trim();
+        const name = form.querySelector('#name')?.value?.trim();
+        const passport = form.querySelector('#passport')?.value?.trim();
+        const nationality = form.querySelector('#nationality')?.value?.trim();
+        const birthdate = form.querySelector('#birthdate')?.value?.trim();
+        const gender = form.querySelector('#gender')?.value?.trim();
+        const email = form.querySelector('#email')?.value?.trim();
+        const specialRequest = form.querySelector('#specialRequest')?.value?.trim();
+        const availableSeats = parseInt(form.querySelector('#availableSeats')?.value || '0', 10);
         const peopleCount = parseInt(form.querySelector('#peopleCount')?.value || '1', 10);
 
-        console.log({ activityId, name, passport, email, emailCode, peopleCount });
-        alert('?덉빟???꾨즺?섏뿀?듬땲??');
-        if (modalEl) {
-            const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-            modal.hide();
+        const showError = (message) => {
+            if (errorBox) {
+                errorBox.textContent = message || '예약 요청 처리 중 오류가 발생했습니다.';
+                errorBox.classList.remove('d-none');
+            } else {
+                alert(message);
+            }
+        };
+
+        if (!activityId) {
+            showError('선택된 활동 정보가 없습니다.');
+            return;
+        }
+        if (!name || !passport || !nationality || !birthdate || !email) {
+            showError('필수 정보를 모두 입력해 주세요.');
+            return;
+        }
+        if (peopleCount <= 0) {
+            showError('예약 인원은 1명 이상이어야 합니다.');
+            return;
+        }
+        if (availableSeats <= 0) {
+            showError('현재 예약 가능한 좌석이 없습니다.');
+            return;
+        }
+        if (availableSeats > 0 && peopleCount > availableSeats) {
+            showError(`잔여 좌석이 부족합니다. (가능 인원 ${availableSeats}명)`);
+            return;
+        }
+
+        const payload = {
+            activityId: Number(activityId),
+            touristName: name,
+            passportNumber: passport,
+            nationality,
+            birthdate,
+            gender,
+            email,
+            peopleCount,
+            specialRequest
+        };
+
+        let originalBtnHtml;
+        if (submitBtn instanceof HTMLButtonElement) {
+            originalBtnHtml = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+        }
+
+        try {
+            const response = await fetch('/api/public/reservations', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const rawBody = await response.text();
+            if (!response.ok) {
+                let message = rawBody;
+                try {
+                    const json = JSON.parse(rawBody);
+                    message = json?.message || json?.detail || message;
+                } catch (_) {
+                    // ignore json parse failure
+                }
+                throw new Error(message || `예약 요청이 실패했습니다. (HTTP ${response.status})`);
+            }
+
+            if (successBox) {
+                successBox.textContent = '예약 요청이 접수되었습니다. 운영자가 확인 후 안내드릴 예정입니다.';
+                successBox.classList.remove('d-none');
+            }
+
+            if (modalEl) {
+                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                setTimeout(() => modal.hide(), 1200);
+            }
+        } catch (err) {
+            showError(err instanceof Error ? err.message : String(err));
+        } finally {
+            if (submitBtn instanceof HTMLButtonElement) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml || '예약 완료';
+            }
         }
     });
 </script>
-
 </html>
-
-
-

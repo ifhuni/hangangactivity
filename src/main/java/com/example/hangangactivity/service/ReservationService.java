@@ -5,18 +5,26 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.hangangactivity.dto.ReservationCreateRequest;
 import com.example.hangangactivity.dto.ReservationPendingResponse;
+import com.example.hangangactivity.mapper.ActivityMapper;
 import com.example.hangangactivity.mapper.CompanyUserMapper;
 import com.example.hangangactivity.mapper.ReservationMapper;
+import com.example.hangangactivity.mapper.TouristMapper;
+import com.example.hangangactivity.model.Activity;
 import com.example.hangangactivity.model.CompanyUser;
+import com.example.hangangactivity.model.Reservation;
 import com.example.hangangactivity.model.ReservationPending;
+import com.example.hangangactivity.model.Tourist;
 
 @Service
 public class ReservationService {
@@ -24,13 +32,137 @@ public class ReservationService {
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String STATUS_CONFIRMED = "CONFIRMED";
     private static final String STATUS_CANCELED = "CANCELED";
+    private static final String STATUS_PENDING = "pending";
 
     private final ReservationMapper reservationMapper;
     private final CompanyUserMapper companyUserMapper;
+    private final ActivityMapper activityMapper;
+    private final TouristMapper touristMapper;
 
-    public ReservationService(ReservationMapper reservationMapper, CompanyUserMapper companyUserMapper) {
+    public ReservationService(ReservationMapper reservationMapper,
+                              CompanyUserMapper companyUserMapper,
+                              ActivityMapper activityMapper,
+                              TouristMapper touristMapper) {
         this.reservationMapper = reservationMapper;
         this.companyUserMapper = companyUserMapper;
+        this.activityMapper = activityMapper;
+        this.touristMapper = touristMapper;
+    }
+
+    @Transactional
+    public ReservationPendingResponse createReservation(ReservationCreateRequest request) {
+        if (request == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Reservation data is required.");
+        }
+
+        Long activityId = request.getActivityId();
+        Activity activity = activityMapper.findById(activityId);
+        if (activity == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Selected activity does not exist.");
+        }
+
+        int maxParticipants = activity.getMaxParticipants() != null ? activity.getMaxParticipants() : 0;
+        int confirmedParticipants = activity.getCurrentParticipants() != null ? activity.getCurrentParticipants() : 0;
+        int leftSeats = Math.max(0, maxParticipants - confirmedParticipants);
+
+        int peopleCount = request.getPeopleCount() != null ? request.getPeopleCount() : 1;
+        if (peopleCount <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one participant is required.");
+        }
+        if (leftSeats < peopleCount) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Not enough seats left. Available: " + leftSeats);
+        }
+
+        Tourist tourist = findOrCreateTourist(request);
+        if (tourist == null || tourist.getId() == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to prepare tourist information.");
+        }
+
+        Reservation reservation = new Reservation();
+        reservation.setActivityId(activityId);
+        reservation.setTouristId(tourist.getId());
+        reservation.setStatus(STATUS_PENDING);
+        reservation.setSpecialRequest(buildSpecialRequest(request, peopleCount));
+
+        int inserted = reservationMapper.insert(reservation);
+        if (inserted == 0 || reservation.getId() == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to save reservation.");
+        }
+
+        ReservationPending pending = reservationMapper.findPendingById(reservation.getId());
+        if (pending == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to load reservation data.");
+        }
+        return toResponse(pending);
+    }
+
+    private Tourist findOrCreateTourist(ReservationCreateRequest request) {
+        String passportNumber = request.getPassportNumber();
+        Tourist existing = touristMapper.findByPassportNumber(passportNumber);
+        if (existing != null) {
+            boolean requiresUpdate = false;
+            if (StringUtils.hasText(request.getTouristName()) && !Objects.equals(existing.getName(), request.getTouristName())) {
+                existing.setName(request.getTouristName());
+                requiresUpdate = true;
+            }
+            if (StringUtils.hasText(request.getEmail()) && !Objects.equals(existing.getEmail(), request.getEmail())) {
+                existing.setEmail(request.getEmail());
+                requiresUpdate = true;
+            }
+            if (StringUtils.hasText(request.getNationality()) && !Objects.equals(existing.getNationality(), request.getNationality())) {
+                existing.setNationality(request.getNationality());
+                requiresUpdate = true;
+            }
+            if (request.getBirthdate() != null && !Objects.equals(existing.getBirthdate(), request.getBirthdate())) {
+                existing.setBirthdate(request.getBirthdate());
+                requiresUpdate = true;
+            }
+            String normalizedGender = normalizeGender(request.getGender());
+            if (!Objects.equals(existing.getGender(), normalizedGender)) {
+                existing.setGender(normalizedGender);
+                requiresUpdate = true;
+            }
+            if (requiresUpdate) {
+                touristMapper.updateBasicInfo(existing);
+            }
+            return existing;
+        }
+
+        Tourist tourist = new Tourist();
+        tourist.setName(request.getTouristName());
+        tourist.setPassportNumber(passportNumber);
+        tourist.setNationality(request.getNationality());
+        tourist.setGender(normalizeGender(request.getGender()));
+        tourist.setBirthdate(request.getBirthdate());
+        tourist.setEmail(request.getEmail());
+        touristMapper.insert(tourist);
+        return tourist;
+    }
+
+    private String buildSpecialRequest(ReservationCreateRequest request, int peopleCount) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Participants: ").append(peopleCount).append(" person");
+        if (peopleCount > 1) {
+            builder.append('s');
+        }
+        String special = request.getSpecialRequest();
+        if (StringUtils.hasText(special)) {
+            builder.append("\n").append(special.trim());
+        }
+        return builder.toString();
+    }
+
+    private String normalizeGender(String gender) {
+        if (!StringUtils.hasText(gender)) {
+            return null;
+        }
+        String value = gender.trim().toUpperCase(Locale.ROOT);
+        return switch (value) {
+            case "M", "MALE" -> "M";
+            case "F", "FEMALE" -> "F";
+            default -> "Other";
+        };
     }
 
     public List<ReservationPendingResponse> listPendingForCompany(Long requesterUserId,

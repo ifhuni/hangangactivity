@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.example.hangangactivity.model.Reservation;
 import com.example.hangangactivity.model.ReservationPending;
 
 @Mapper
@@ -18,4 +19,6 @@ public interface ReservationMapper {
 
     int updateStatus(@Param("reservationId") Long reservationId,
                      @Param("status") String status);
+
+    int insert(Reservation reservation);
 }

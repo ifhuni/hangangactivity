@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.hangangactivity.mapper.TouristMapper">
+
+  <resultMap id="TouristMap" type="com.example.hangangactivity.model.Tourist">
+    <id property="id" column="id" />
+    <result property="name" column="name" />
+    <result property="passportNumber" column="passport_number" />
+    <result property="nationality" column="nationality" />
+    <result property="gender" column="gender" />
+    <result property="birthdate" column="birthdate" />
+    <result property="email" column="email" />
+    <result property="createdAt" column="created_at" />
+  </resultMap>
+
+  <select id="findByPassportNumber" parameterType="string" resultMap="TouristMap">
+    SELECT
+      id,
+      "name" AS name,
+      passport_number,
+      nationality,
+      gender,
+      birthdate,
+      email,
+      created_at
+    FROM public.tourists
+    WHERE passport_number = #{passportNumber}
+  </select>
+
+  <insert id="insert" parameterType="com.example.hangangactivity.model.Tourist"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO public.tourists (
+      "name",
+      passport_number,
+      nationality,
+      gender,
+      birthdate,
+      email
+    ) VALUES (
+      #{name},
+      #{passportNumber},
+      #{nationality},
+      #{gender},
+      #{birthdate},
+      #{email}
+    )
+  </insert>
+
+  <update id="updateBasicInfo" parameterType="com.example.hangangactivity.model.Tourist">
+    UPDATE public.tourists
+    SET "name" = #{name},
+        nationality = #{nationality},
+        gender = #{gender},
+        birthdate = #{birthdate},
+        email = #{email}
+    WHERE id = #{id}
+  </update>
+
+</mapper>
