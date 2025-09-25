@@ -126,5 +126,23 @@
       #{imageUrl}
     )
   </insert>
+  <update id="update" parameterType="com.example.hangangactivity.model.Activity">
+    UPDATE public.activities
+    SET title = #{title},
+        description = #{description},
+        "location" = #{location},
+        activity_type = #{activityType},
+        max_participants = #{maxParticipants},
+        activity_date = #{activityDate},
+        start_time = #{startTime},
+        end_time = #{endTime},
+        status = #{status},
+        price = #{price},
+        image_url = #{imageUrl}
+    WHERE id = #{id}
+      AND company_id = #{companyId}
+  </update>
 
 </mapper>
+
+

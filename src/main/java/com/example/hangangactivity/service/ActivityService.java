@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
@@ -55,26 +56,54 @@ public class ActivityService {
     @Transactional
     public ActivityResponse createActivity(Long requesterUserId, String requesterRole, ActivityCreateRequest request) {
         CompanyUser user = requireUser(requesterUserId);
-        boolean isAdmin = requesterRole != null && ROLE_ADMIN.equalsIgnoreCase(requesterRole);
+        boolean isAdmin = isAdminRole(requesterRole);
 
         Long companyId = request.getCompanyId();
         if (companyId == null) {
             companyId = user.getCompanyId();
         }
 
+        validateCompanyAccess(user, isAdmin, companyId, true);
+
+        Activity activity = new Activity();
+        applyRequestToActivity(activity, null, request, companyId);
+        activityMapper.insert(activity);
+
+        Activity inserted = activityMapper.findById(activity.getId().longValue());
+        return toResponse(inserted);
+    }
+
+    @Transactional
+    public ActivityResponse updateActivity(Long requesterUserId, String requesterRole, Long activityId, ActivityCreateRequest request) {
+        CompanyUser user = requireUser(requesterUserId);
+        boolean isAdmin = isAdminRole(requesterRole);
+
+        Activity existing = requireActivity(activityId);
+        Long companyId = existing.getCompanyId() != null ? existing.getCompanyId().longValue() : null;
+        validateCompanyAccess(user, isAdmin, companyId, true);
+
+        applyRequestToActivity(existing, existing, request, companyId);
+        existing.setId(activityId.intValue());
+        int updated = activityMapper.update(existing);
+        if (updated == 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Activity update failed.");
+        }
+        return toResponse(activityMapper.findById(activityId));
+    }
+
+    public ActivityResponse getActivity(Long requesterUserId, String requesterRole, Long activityId) {
+        CompanyUser user = requireUser(requesterUserId);
+        boolean isAdmin = isAdminRole(requesterRole);
+
+        Activity activity = requireActivity(activityId);
+        Long companyId = activity.getCompanyId() != null ? activity.getCompanyId().longValue() : null;
+        validateCompanyAccess(user, isAdmin, companyId, false);
+        return toResponse(activity);
+    }
+
+    private void applyRequestToActivity(Activity target, Activity existing, ActivityCreateRequest request, Long companyId) {
         if (companyId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company id is required.");
-        }
-
-        if (!isAdmin && !companyId.equals(user.getCompanyId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only manage activities for your company.");
-        }
-
-        if (!isAdmin) {
-            String membership = user.getMembershipStatus();
-            if (!STATUS_APPROVED.equalsIgnoreCase(membership)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company approval must be completed before creating activities.");
-            }
         }
 
         String title = normalizedOrThrow(request.getTitle(), "Activity title is required.");
@@ -84,6 +113,7 @@ public class ActivityService {
         if (capacity != null && capacity <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Capacity must be greater than zero.");
         }
+        Integer capacityValue = capacity != null ? capacity : existing != null ? existing.getMaxParticipants() : 0;
 
         LocalDateTime startAt = request.getStartAt();
         LocalDateTime endAt = request.getEndAt();
@@ -95,33 +125,33 @@ public class ActivityService {
         }
 
         String category = normalizeOrNull(request.getCategory());
+        if (!StringUtils.hasText(category) && existing != null && StringUtils.hasText(existing.getActivityType())) {
+            category = existing.getActivityType();
+        }
         if (!StringUtils.hasText(category)) {
             category = "GENERAL";
         }
 
         String status = normalizeOrNull(request.getStatus());
+        if (!StringUtils.hasText(status) && existing != null && StringUtils.hasText(existing.getStatus())) {
+            status = existing.getStatus();
+        }
         if (!StringUtils.hasText(status)) {
             status = DEFAULT_STATUS;
         }
 
-        Activity activity = new Activity();
-        activity.setCompanyId(Math.toIntExact(companyId));
-        activity.setTitle(title);
-        activity.setDescription(request.getDescription());
-        activity.setLocation(location);
-        activity.setActivityType(category);
-        activity.setMaxParticipants(capacity != null ? capacity : 0);
-        activity.setActivityDate(startAt.toLocalDate());
-        activity.setStartTime(startAt.toLocalTime());
-        activity.setEndTime(resolveEndTime(endAt, startAt));
-        activity.setStatus(status.toUpperCase(Locale.ROOT));
-        activity.setPrice(request.getPrice());
-        activity.setImageUrl(null);
-
-        activityMapper.insert(activity);
-
-        Activity inserted = activityMapper.findById(activity.getId().longValue());
-        return toResponse(inserted);
+        target.setCompanyId(Math.toIntExact(companyId));
+        target.setTitle(title);
+        target.setDescription(request.getDescription());
+        target.setLocation(location);
+        target.setActivityType(category);
+        target.setMaxParticipants(capacityValue);
+        target.setActivityDate(startAt.toLocalDate());
+        target.setStartTime(startAt.toLocalTime());
+        target.setEndTime(resolveEndTime(endAt, startAt));
+        target.setStatus(status.toUpperCase(Locale.ROOT));
+        target.setPrice(request.getPrice() != null ? request.getPrice() : existing != null ? existing.getPrice() : null);
+        target.setImageUrl(existing != null ? existing.getImageUrl() : null);
     }
 
     private LocalTime resolveEndTime(LocalDateTime endAt, LocalDateTime startAt) {
@@ -134,6 +164,17 @@ public class ActivityService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "End date must be on the same day as the start date.");
         }
         return endAt.toLocalTime();
+    }
+
+    private Activity requireActivity(Long activityId) {
+        if (activityId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Activity id is required.");
+        }
+        Activity activity = activityMapper.findById(activityId);
+        if (activity == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found.");
+        }
+        return activity;
     }
 
     private ActivityResponse toResponse(Activity activity) {
@@ -164,6 +205,20 @@ public class ActivityService {
         return LocalDateTime.of(date, time);
     }
 
+    private void validateCompanyAccess(CompanyUser user, boolean isAdmin, Long companyId, boolean requireApproval) {
+        if (companyId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company id is required.");
+        }
+        if (!isAdmin) {
+            if (!Objects.equals(user.getCompanyId(), companyId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only manage activities for your company.");
+            }
+            if (requireApproval && !STATUS_APPROVED.equalsIgnoreCase(StringUtils.trimAllWhitespace(String.valueOf(user.getMembershipStatus())))) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company approval must be completed before managing activities.");
+            }
+        }
+    }
+
     private CompanyUser requireUser(Long userId) {
         if (userId == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login is required.");
@@ -173,6 +228,10 @@ public class ActivityService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login is required.");
         }
         return user;
+    }
+
+    private boolean isAdminRole(String role) {
+        return role != null && ROLE_ADMIN.equalsIgnoreCase(role);
     }
 
     private String normalizedOrThrow(String value, String message) {
@@ -186,5 +245,3 @@ public class ActivityService {
         return StringUtils.hasText(value) ? value.trim() : null;
     }
 }
-
-

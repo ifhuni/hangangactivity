@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -64,6 +65,18 @@ public class ActivityController {
         return ResponseEntity.ok(activityService.listActivitiesForUser(userId));
     }
 
+    @GetMapping("/activities/{activityId}")
+    public ResponseEntity<ActivityResponse> findOne(@PathVariable("activityId") Long activityId,
+                                                     HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        ensureAuthenticated(session);
+
+        Long userId = (Long) session.getAttribute(AuthController.SESSION_COMPANY_USER_ID);
+        String role = (String) session.getAttribute(AuthController.SESSION_COMPANY_ROLE);
+        ActivityResponse response = activityService.getActivity(userId, role, activityId);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping(value = "/activities", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ActivityResponse> createActivity(@RequestParam("title") String title,
                                                            @RequestParam(value = "category", required = false) String category,
@@ -83,15 +96,52 @@ public class ActivityController {
         Long userId = (Long) session.getAttribute(AuthController.SESSION_COMPANY_USER_ID);
         String role = (String) session.getAttribute(AuthController.SESSION_COMPANY_ROLE);
 
-        Long companyId = null;
-        if (StringUtils.hasText(companyIdParam)) {
-            try {
-                companyId = Long.valueOf(companyIdParam.trim());
-            } catch (NumberFormatException ex) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company id must be numeric.");
-            }
-        }
+        ActivityCreateRequest createRequest = buildRequest(title, category, description, location,
+                capacity, startAt, endAt, price, status, companyIdParam, image);
 
+        ActivityResponse response = activityService.createActivity(userId, role, createRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping(value = "/activities/{activityId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ActivityResponse> updateActivity(@PathVariable("activityId") Long activityId,
+                                                           @RequestParam("title") String title,
+                                                           @RequestParam(value = "category", required = false) String category,
+                                                           @RequestParam(value = "description", required = false) String description,
+                                                           @RequestParam("location") String location,
+                                                           @RequestParam(value = "capacity", required = false) String capacity,
+                                                           @RequestParam("startAt") String startAt,
+                                                           @RequestParam("endAt") String endAt,
+                                                           @RequestParam(value = "price", required = false) String price,
+                                                           @RequestParam(value = "status", required = false) String status,
+                                                           @RequestParam(value = "companyId", required = false) String companyIdParam,
+                                                           @RequestParam(value = "image", required = false) MultipartFile image,
+                                                           HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        ensureAuthenticated(session);
+
+        Long userId = (Long) session.getAttribute(AuthController.SESSION_COMPANY_USER_ID);
+        String role = (String) session.getAttribute(AuthController.SESSION_COMPANY_ROLE);
+
+        ActivityCreateRequest updateRequest = buildRequest(title, category, description, location,
+                capacity, startAt, endAt, price, status, companyIdParam, image);
+
+        ActivityResponse response = activityService.updateActivity(userId, role, activityId, updateRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    private ActivityCreateRequest buildRequest(String title,
+                                               String category,
+                                               String description,
+                                               String location,
+                                               String capacity,
+                                               String startAt,
+                                               String endAt,
+                                               String price,
+                                               String status,
+                                               String companyIdParam,
+                                               MultipartFile image) {
+        Long companyId = parseLong(companyIdParam, "companyId");
         Integer capacityValue = parseInteger(capacity, "capacity");
         Integer priceValue = parseInteger(price, "price");
         LocalDateTime startAtValue = parseDateTime(startAt, "startAt");
@@ -101,7 +151,7 @@ public class ActivityController {
             log.debug("Activity image upload is not yet supported. Ignoring file: {}", image.getOriginalFilename());
         }
 
-        ActivityCreateRequest createRequest = new ActivityCreateRequest(
+        return new ActivityCreateRequest(
                 companyId,
                 title,
                 category,
@@ -113,9 +163,6 @@ public class ActivityController {
                 priceValue,
                 status
         );
-
-        ActivityResponse response = activityService.createActivity(userId, role, createRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     private void ensureAuthenticated(HttpSession session) {
@@ -134,6 +181,17 @@ public class ActivityController {
         }
         try {
             return Integer.valueOf(value.trim());
+        } catch (NumberFormatException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, fieldName + " must be numeric.");
+        }
+    }
+
+    private Long parseLong(String value, String fieldName) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+        try {
+            return Long.valueOf(value.trim());
         } catch (NumberFormatException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, fieldName + " must be numeric.");
         }

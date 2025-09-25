@@ -26,4 +26,6 @@ public interface ActivityMapper {
     Activity findById(@Param("id") Long id);
 
     void insert(Activity activity);
+
+    int update(Activity activity);
 }

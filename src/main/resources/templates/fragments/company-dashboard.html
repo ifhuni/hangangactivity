@@ -147,7 +147,7 @@
           <h5 class="modal-title fw-bold">활동 등록</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form id="activityCreateForm" class="needs-validation" novalidate>
+        <form id="activityCreateForm" class="needs-validation" novalidate>`r`n          <input type="hidden" name="activityId" id="activityIdField">
           <div class="modal-body">
             <div class="row g-3">
               <div class="col-md-6">
@@ -205,14 +205,11 @@
               </div>
             </div>
             <div class="alert alert-danger d-none mt-3" id="activityCreateError"></div>
-            <div class="alert alert-success d-none mt-3" id="activityCreateSuccess">활동이 등록되었습니다.</div>
+            <div class="alert alert-success d-none mt-3" id="activityCreateSuccess">활동이 저장되었습니다.</div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">닫기</button>
-            <button type="submit" class="btn btn-primary" id="activityModalSubmit">
-              <span class="spinner-border spinner-border-sm me-2 d-none" id="activityCreateSpinner" role="status" aria-hidden="true"></span>
-              저장
-            </button>
+            <button type="submit" class="btn btn-primary" id="activityModalSubmit">`r`n              <span class="spinner-border spinner-border-sm me-2 d-none" id="activityCreateSpinner" role="status" aria-hidden="true"></span>`r`n              <span data-role="activity-submit-label">등록</span>`r`n            </button>
           </div>
         </form>
       </div>
@@ -220,162 +217,274 @@
   </div>
 
   <!-- 스크립트: 활동 목록 로드 & 활동 등록 -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const now = new Date();
-      // yyyy-MM-ddTHH:mm 형식으로 변환
-      const pad = n => String(n).padStart(2, '0');
-      const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-
-      // 시작/종료 일시 input에 값 설정
-      const startInput = document.querySelector('input[name="startAt"]');
-      const endInput   = document.querySelector('input[name="endAt"]');
-
-      if (startInput) startInput.value = todayStr;
-      if (endInput)   endInput.value   = todayStr;
-    });
+      <script>
     (function () {
-      const root = document.getElementById('companyDashboardRoot');
+      const root = document.getElementById("companyDashboardRoot");
       const companyId = root?.dataset.companyId;
-      const role = (root?.dataset.role || '').toUpperCase();
-      const status = (root?.dataset.status || '').toUpperCase();
+      const role = (root?.dataset.role || "").toUpperCase();
+      const status = (root?.dataset.status || "").toUpperCase();
+      const DEFAULT_STATUS = "DRAFT";
 
-      // 승인 대기 알림 토글 (회사 계정 & 상태 PENDING)
-      const pendingNotice = document.getElementById('pendingNotice');
-      if (pendingNotice && role !== 'ADMIN' && (status === 'PENDING' || status === 'UNASSIGNED')) {
-        pendingNotice.classList.remove('d-none');
+      const pendingNotice = document.getElementById("pendingNotice");
+      if (pendingNotice && role !== "ADMIN" && (status === "PENDING" || status === "UNASSIGNED")) {
+        pendingNotice.classList.remove("d-none");
       }
 
-      // 등록된 활동 목록 로딩
-      const btnRefreshActivities = document.getElementById('btnRefreshActivities');
-      const activitiesSpinner = document.getElementById('activitiesSpinner');
+      const activityModal = document.getElementById("activityCreateModal");
+      const activityForm = document.getElementById("activityCreateForm");
+      const activityIdField = document.getElementById("activityIdField");
+      const activityCreateSpinner = document.getElementById("activityCreateSpinner");
+      const activityCreateError = document.getElementById("activityCreateError");
+      const activityCreateSuccess = document.getElementById("activityCreateSuccess");
+      const activityModalSubmit = document.getElementById("activityModalSubmit");
+      const activitySubmitLabel = activityModalSubmit?.querySelector('[data-role="activity-submit-label"]');
+      const activityModalTitle = activityModal?.querySelector(".modal-title");
+      const activityImageInput = activityForm?.querySelector('input[name="image"]');
+      const activityFields = activityForm ? {
+        title: activityForm.elements.namedItem('title'),
+        category: activityForm.elements.namedItem('category'),
+        description: activityForm.elements.namedItem('description'),
+        location: activityForm.elements.namedItem('location'),
+        capacity: activityForm.elements.namedItem('capacity'),
+        startAt: activityForm.elements.namedItem('startAt'),
+        endAt: activityForm.elements.namedItem('endAt'),
+        price: activityForm.elements.namedItem('price'),
+        statusField: activityForm.elements.namedItem('status'),
+        image: activityImageInput
+      } : {};
+
+      const btnRefreshActivities = document.getElementById("btnRefreshActivities");
+      const activitiesSpinner = document.getElementById("activitiesSpinner");
       const activitiesError = document.querySelector('[data-role="activities-error"]');
       const activitiesEmpty = document.querySelector('[data-role="activities-empty"]');
       const activitiesTableWrapper = document.querySelector('[data-role="activities-table-wrapper"]');
       const activitiesTbody = document.querySelector('[data-role="activities-table-body"]');
-      const summaryActivitiesCount = document.getElementById('summaryActivitiesCount');
+      const summaryActivitiesCount = document.getElementById("summaryActivitiesCount");
 
-      async function loadActivities() {
-        if (!activitiesSpinner) return;
-        activitiesSpinner.classList.remove('d-none');
-        activitiesError.classList.add('d-none');
-        activitiesEmpty.classList.add('d-none');
-        activitiesTableWrapper.classList.add('d-none');
-        activitiesTbody.innerHTML = '';
-        try {
-          const url = companyId ? `/api/companies/${companyId}/activities` : `/api/activities/mine`;
-          const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-          if (!res.ok) throw new Error('활동 목록을 불러오지 못했습니다.');
-          const items = await res.json();
-          if (!items || items.length === 0) {
-            activitiesEmpty.classList.remove('d-none');
-            summaryActivitiesCount && (summaryActivitiesCount.textContent = '0');
-          } else {
-            items.forEach(row => {
-              const tr = document.createElement('tr');
-              const opInterval = formatInterval(row.startAt, row.endAt);
-              tr.innerHTML = `
-                <td><a href="/activities/${row.id}" class="text-decoration-none">${escapeHtml(row.title || '')}</a></td>
-                <td>${escapeHtml(row.category || '')}</td>
-                <td>${escapeHtml(row.location || '')}</td>
-                <td>${opInterval}</td>
-                <td class="text-end"><span class="badge bg-${statusBadge(row.status)}">${escapeHtml(row.status || '')}</span></td>
-              `;
-              activitiesTbody.appendChild(tr);
-            });
-            activitiesTableWrapper.classList.remove('d-none');
-            summaryActivitiesCount && (summaryActivitiesCount.textContent = String(items.length));
-          }
-        } catch (err) {
-          activitiesError.textContent = err.message || '오류가 발생했습니다.';
-          activitiesError.classList.remove('d-none');
-        } finally {
-          activitiesSpinner.classList.add('d-none');
-        }
+      const reservationSection = document.getElementById("reservationPendingSection");
+
+      function isAdmin(roleValue) {
+        return roleValue === "ADMIN";
       }
 
       function statusBadge(s) {
-        const k = String(s || '').toUpperCase();
-        if (k === 'PUBLISHED') return 'success';
-        if (k === 'HIDDEN') return 'secondary';
-        return 'warning'; // DRAFT 등
+        const k = String(s || "").toUpperCase();
+        if (k === "PUBLISHED") return "success";
+        if (k === "HIDDEN") return "secondary";
+        return "warning";
       }
 
       function formatInterval(startAt, endAt) {
-        if (!startAt && !endAt) return '';
+        if (!startAt && !endAt) return "";
         const s = startAt ? new Date(startAt) : null;
         const e = endAt ? new Date(endAt) : null;
-        const k = (d) => isNaN(d?.getTime?.()) ? '' : `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-        return `${k(s)} ~ ${k(e)}`.trim();
+        const format = (d) => Number.isNaN(d?.getTime?.()) ? "" : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+        return `${format(s)} ~ ${format(e)}`.trim();
       }
 
       function formatDateTimeValue(value) {
-        if (!value) return '';
+        if (!value) return "";
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) {
-          return '';
+          return "";
         }
         const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
-        const hh = String(date.getHours()).padStart(2, '0');
-        const min = String(date.getMinutes()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, "0");
+        const dd = String(date.getDate()).padStart(2, "0");
+        const hh = String(date.getHours()).padStart(2, "0");
+        const min = String(date.getMinutes()).padStart(2, "0");
         return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
       }
-      function escapeHtml(str) {
-        return String(str || '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+
+      function toInputDateTime(value) {
+        if (!value) return "";
+        const date = value instanceof Date ? value : new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return "";
+        }
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, "0");
+        const dd = String(date.getDate()).padStart(2, "0");
+        const hh = String(date.getHours()).padStart(2, "0");
+        const min = String(date.getMinutes()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
       }
 
-      btnRefreshActivities?.addEventListener('click', loadActivities);
-      // 초기 로드
+      function nowInputValue() {
+        return toInputDateTime(new Date());
+      }
+
+      function escapeHtml(str) {
+        return String(str || "").replace(/[&<>"']/g, (m) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[m]));
+      }
+
+      function hideActivityMessages() {
+        activityCreateError?.classList.add("d-none");
+        activityCreateSuccess?.classList.add("d-none");
+      }
+
+      function setActivityModal(mode, activity) {
+        if (!activityForm) {
+          return;
+        }
+        hideActivityMessages();
+        activityForm.classList.remove("was-validated");
+        activityImageInput && (activityImageInput.value = "");
+
+        if (mode === "edit") {
+          activityIdField.value = activity?.id != null ? activity.id : "";
+          activityFields.title && (activityFields.title.value = activity?.title || "");
+          activityFields.category && (activityFields.category.value = activity?.category || "GENERAL");
+          activityFields.description && (activityFields.description.value = activity?.description || "");
+          activityFields.location && (activityFields.location.value = activity?.location || "");
+          activityFields.capacity && (activityFields.capacity.value = activity?.capacity != null ? activity.capacity : "");
+          activityFields.startAt && (activityFields.startAt.value = toInputDateTime(activity?.startAt) || nowInputValue());
+          activityFields.endAt && (activityFields.endAt.value = toInputDateTime(activity?.endAt) || nowInputValue());
+          activityFields.price && (activityFields.price.value = activity?.price != null ? activity.price : "");
+          activityFields.statusField && (activityFields.statusField.value = (activity?.status || DEFAULT_STATUS).toUpperCase());
+          activityModalTitle && (activityModalTitle.textContent = "활동 수정");
+          activitySubmitLabel && (activitySubmitLabel.textContent = "수정");
+          activityForm.dataset.mode = "edit";
+        } else {
+          activityIdField.value = "";
+          activityForm.reset();
+          activityFields.startAt && (activityFields.startAt.value = nowInputValue());
+          activityFields.endAt && (activityFields.endAt.value = nowInputValue());
+          activityFields.statusField && (activityFields.statusField.value = DEFAULT_STATUS);
+          activityModalTitle && (activityModalTitle.textContent = "활동 등록");
+          activitySubmitLabel && (activitySubmitLabel.textContent = "등록");
+          activityForm.dataset.mode = "create";
+        }
+      }
+
+      document.querySelectorAll('[data-bs-target="#activityCreateModal"]').forEach(btn => {
+        btn.addEventListener("click", () => setActivityModal("create"));
+      });
+      setActivityModal("create");
+
+      async function loadActivities() {
+        if (!activitiesSpinner) return;
+        activitiesSpinner.classList.remove("d-none");
+        activitiesError?.classList.add("d-none");
+        activitiesEmpty?.classList.add("d-none");
+        activitiesTableWrapper?.classList.add("d-none");
+        activitiesTbody && (activitiesTbody.innerHTML = "");
+        try {
+          const url = companyId ? `/api/companies/${companyId}/activities` : `/api/activities/mine`;
+          const res = await fetch(url, { headers: { "Accept": "application/json" } });
+          if (!res.ok) throw new Error("활동 목록을 불러오지 못했습니다.");
+          const items = await res.json();
+          if (!items || items.length === 0) {
+            activitiesEmpty?.classList.remove("d-none");
+            if (summaryActivitiesCount) summaryActivitiesCount.textContent = "0";
+          } else {
+            items.forEach(row => {
+              const tr = document.createElement("tr");
+              tr.dataset.activityId = row.id != null ? String(row.id) : "";
+              tr.__activityData = row;
+              const statusHtml = `<span class="badge bg-${statusBadge(row.status)}">${escapeHtml(row.status || "")}</span>`;
+              tr.innerHTML = `
+                <td><button type="button" class="btn btn-link p-0" data-role="activity-edit">${escapeHtml(row.title || "")}</button></td>
+                <td>${escapeHtml(row.category || "")}</td>
+                <td>${escapeHtml(row.location || "")}</td>
+                <td>${formatInterval(row.startAt, row.endAt)}</td>
+                <td class="text-end">${statusHtml}</td>
+              `;
+              activitiesTbody?.appendChild(tr);
+            });
+            activitiesTableWrapper?.classList.remove("d-none");
+            if (summaryActivitiesCount) summaryActivitiesCount.textContent = String(items.length);
+          }
+        } catch (err) {
+          if (activitiesError) {
+            activitiesError.textContent = err.message || "오류가 발생했습니다.";
+            activitiesError.classList.remove("d-none");
+          }
+        } finally {
+          activitiesSpinner?.classList.add("d-none");
+        }
+      }
+
+      btnRefreshActivities?.addEventListener("click", loadActivities);
       loadActivities();
 
-      // 활동 등록 폼
-      const activityForm = document.getElementById('activityCreateForm');
-      const activityCreateSpinner = document.getElementById('activityCreateSpinner');
-      const activityCreateError = document.getElementById('activityCreateError');
-      const activityCreateSuccess = document.getElementById('activityCreateSuccess');
+      activitiesTbody?.addEventListener("click", async (event) => {
+        const editBtn = event.target.closest('[data-role="activity-edit"]');
+        if (!editBtn) {
+          return;
+        }
+        event.preventDefault();
+        const row = editBtn.closest("tr");
+        const activityId = row?.dataset.activityId;
+        if (!activityId) {
+          return;
+        }
+        let activityData = row.__activityData;
+        try {
+          const res = await fetch(`/api/activities/${encodeURIComponent(activityId)}`, { headers: { "Accept": "application/json" } });
+          if (res.ok) {
+            activityData = await res.json();
+            row.__activityData = activityData;
+          }
+        } catch (err) {
+          console.warn("Failed to fetch activity detail", err);
+        }
+        if (!activityData) {
+          return;
+        }
+        setActivityModal("edit", activityData);
+        if (window.bootstrap?.Modal) {
+          window.bootstrap.Modal.getOrCreateInstance(activityModal)?.show();
+        }
+      });
 
-      // 부트스트랩 폼 검증
-      activityForm?.addEventListener('submit', async function (e) {
+      activityForm?.addEventListener("submit", async function (e) {
         e.preventDefault();
         e.stopPropagation();
-        activityCreateError.classList.add('d-none');
-        activityCreateSuccess.classList.add('d-none');
+        hideActivityMessages();
 
         if (!activityForm.checkValidity()) {
-          activityForm.classList.add('was-validated');
+          activityForm.classList.add("was-validated");
           return;
         }
 
         const formData = new FormData(activityForm);
-        if (companyId) formData.append('companyId', companyId);
+        if (companyId) formData.append("companyId", companyId);
+
+        const isUpdate = Boolean(activityIdField?.value);
+        const targetUrl = isUpdate ? `/api/activities/${encodeURIComponent(activityIdField.value)}` : '/api/activities';
+        const method = isUpdate ? "PUT" : "POST";
+        const successMessage = isUpdate ? "활동을 수정했습니다." : "활동을 등록했습니다.";
 
         try {
-          activityCreateSpinner.classList.remove('d-none');
-          const res = await fetch('/api/activities', {
-            method: 'POST',
+          activityCreateSpinner?.classList.remove("d-none");
+          const res = await fetch(targetUrl, {
+            method,
             body: formData
           });
           if (!res.ok) {
             const t = await res.text();
-            throw new Error(t || '저장에 실패했습니다.');
+            throw new Error(t || "저장에 실패했습니다.");
           }
-          activityCreateSuccess.classList.remove('d-none');
-          // 목록 새로고침
+          activityCreateSuccess.textContent = successMessage;
+          activityCreateSuccess.classList.remove("d-none");
           await loadActivities();
-          // 요약 갱신은 loadActivities에서 처리됨
-          // 폼 초기화
+          if (window.bootstrap?.Modal) {
+            window.bootstrap.Modal.getInstance(activityModal)?.hide();
+          }
           activityForm.reset();
-          activityForm.classList.remove('was-validated');
+          activityForm.classList.remove("was-validated");
+          activityFields.startAt && (activityFields.startAt.value = nowInputValue());
+          activityFields.endAt && (activityFields.endAt.value = nowInputValue());
+          activityFields.statusField && (activityFields.statusField.value = DEFAULT_STATUS);
         } catch (err) {
-          activityCreateError.textContent = err.message || '오류가 발생했습니다.';
-          activityCreateError.classList.remove('d-none');
+          activityCreateError.textContent = err.message || "오류가 발생했습니다.";
+          activityCreateError.classList.remove("d-none");
         } finally {
-          activityCreateSpinner.classList.add('d-none');
+          activityCreateSpinner?.classList.add("d-none");
         }
       });
-      const reservationSection = document.getElementById('reservationPendingSection');
+
       if (reservationSection) {
         const reservationsSpinner = reservationSection.querySelector('[data-role="reservations-spinner"]');
         const reservationsError = reservationSection.querySelector('[data-role="reservations-error"]');
@@ -385,9 +494,9 @@
         const reservationsTbody = reservationSection.querySelector('[data-role="reservations-table-body"]');
         const reservationsRefresh = reservationSection.querySelector('[data-role="reservations-refresh"]');
 
-        const canManageReservations = role === 'ADMIN' || status === 'APPROVED';
+        const canManageReservations = isAdmin(role) || status === "APPROVED";
         if (!canManageReservations) {
-          reservationSection.classList.add('d-none');
+          reservationSection.classList.add("d-none");
         } else {
           const buildReservationsUrl = (force) => {
             const params = [];
@@ -398,32 +507,32 @@
 
           const hideReservationSuccess = () => {
             if (reservationsSuccess) {
-              reservationsSuccess.classList.add('d-none');
-              reservationsSuccess.textContent = '예약 상태가 업데이트되었습니다.';
+              reservationsSuccess.classList.add("d-none");
+              reservationsSuccess.textContent = "예약 상태가 업데이트되었습니다.";
             }
           };
 
           const showReservationSuccess = (message) => {
             if (reservationsSuccess) {
               reservationsSuccess.textContent = message;
-              reservationsSuccess.classList.remove('d-none');
+              reservationsSuccess.classList.remove("d-none");
             }
           };
 
           const renderReservations = (items) => {
             if (!reservationsTbody) return;
-            reservationsTbody.innerHTML = '';
+            reservationsTbody.innerHTML = "";
             items.forEach((item) => {
-              const row = document.createElement('tr');
+              const row = document.createElement("tr");
               row.dataset.reservationId = String(item.id);
               row.innerHTML = `
                 <td>
-                  <div>${escapeHtml(item.touristName || '')}</div>
-                  <div class="text-muted small">${escapeHtml(item.touristEmail || '')}</div>
-                  <div class="text-muted small">${escapeHtml(item.touristNationality || '')}</div>
+                  <div>${escapeHtml(item.touristName || "")}</div>
+                  <div class="text-muted small">${escapeHtml(item.touristEmail || "")}</div>
+                  <div class="text-muted small">${escapeHtml(item.touristNationality || "")}</div>
                 </td>
                 <td>
-                  <div>${escapeHtml(item.activityTitle || '')}</div>
+                  <div>${escapeHtml(item.activityTitle || "")}</div>
                   <div class="text-muted small">${formatInterval(item.startAt, item.endAt)}</div>
                 </td>
                 <td>
@@ -446,69 +555,71 @@
               return;
             }
             hideReservationSuccess();
-            reservationsSpinner.classList.remove('d-none');
-            reservationsError.classList.add('d-none');
-            reservationsEmpty.classList.add('d-none');
-            reservationsTableWrapper.classList.add('d-none');
+            reservationsSpinner.classList.remove("d-none");
+            reservationsError.classList.add("d-none");
+            reservationsEmpty.classList.add("d-none");
+            reservationsTableWrapper.classList.add("d-none");
             if (reservationsTbody) {
-              reservationsTbody.innerHTML = '';
+              reservationsTbody.innerHTML = "";
             }
             if (reservationsRefresh) {
               reservationsRefresh.disabled = true;
             }
 
             try {
-              const res = await fetch(buildReservationsUrl(force), { credentials: 'same-origin', cache: 'no-store' });
+              const res = await fetch(buildReservationsUrl(force), { credentials: "same-origin", cache: "no-store" });
               if (!res.ok) {
-                throw new Error('예약 목록을 불러오지 못했습니다.');
+                throw new Error("예약을 불러오지 못했습니다. (HTTP " + res.status + ")");
               }
               const data = await res.json();
               if (!Array.isArray(data) || data.length === 0) {
-                reservationsEmpty.classList.remove('d-none');
+                reservationsEmpty.classList.remove("d-none");
                 return;
               }
               renderReservations(data);
-              reservationsTableWrapper.classList.remove('d-none');
+              reservationsTableWrapper.classList.remove("d-none");
             } catch (err) {
-              if (reservationsError) {
-                reservationsError.textContent = err.message || '예약 조회 중 오류가 발생했습니다.';
-                reservationsError.classList.remove('d-none');
-              }
+              reservationsError.textContent = err.message || "예약 정보를 불러오는 중 오류가 발생했습니다.";
+              reservationsError.classList.remove("d-none");
             } finally {
-              if (reservationsSpinner) {
-                reservationsSpinner.classList.add('d-none');
-              }
+              reservationsSpinner.classList.add("d-none");
               if (reservationsRefresh) {
                 reservationsRefresh.disabled = false;
               }
             }
           };
 
-          reservationsRefresh?.addEventListener('click', (event) => {
+          reservationsRefresh?.addEventListener("click", (event) => {
             event.preventDefault();
             loadReservations(true);
           });
 
-          reservationsTbody?.addEventListener('click', async (event) => {
+          reservationsTbody?.addEventListener("click", async (event) => {
             const btn = event.target.closest('button[data-action]');
-            if (!btn) return;
+            if (!btn) {
+              return;
+            }
             const row = btn.closest('tr');
-            if (!row) return;
+            if (!row) {
+              return;
+            }
             const reservationId = row.dataset.reservationId;
-            if (!reservationId) return;
+            if (!reservationId) {
+              return;
+            }
 
             const action = btn.dataset.action;
             let endpoint;
             let confirmMessage;
             let successMessage;
-            if (action === 'approve') {
+            if (action === "approve") {
               endpoint = `/api/reservations/${encodeURIComponent(reservationId)}/approve`;
-              confirmMessage = '해당 예약을 승인하시겠습니까?';
-              successMessage = '예약을 승인했습니다.';
-            } else if (action === 'reject') {
+              confirmMessage = "해당 예약을 승인하시겠습니까?";
+              successMessage = "예약을 승인했습니다.";
+            } else if (action === "reject") {
               endpoint = `/api/reservations/${encodeURIComponent(reservationId)}/reject`;
-              confirmMessage = '해당 예약을 거절하시겠습니까?';
-              successMessage = '예약을 거절했습니다.';
+              confirmMessage = "해당 예약을 거절하시겠습니까?";
+              successMessage = "예약을 거절했습니다.";
             } else {
               return;
             }
@@ -523,21 +634,21 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
 
             try {
-              const res = await fetch(endpoint, { method: 'POST', credentials: 'same-origin' });
+              const res = await fetch(endpoint, { method: "POST", credentials: "same-origin" });
               if (!res.ok) {
-                const text = await res.text();
-                throw new Error(text || '예약 상태를 변경하지 못했습니다.');
+                const textResponse = await res.text();
+                throw new Error(textResponse || "예약 상태를 변경하지 못했습니다.");
               }
               row.remove();
               if (!reservationsTbody || reservationsTbody.children.length === 0) {
-                reservationsTableWrapper?.classList.add('d-none');
-                reservationsEmpty?.classList.remove('d-none');
+                reservationsTableWrapper.classList.add("d-none");
+                reservationsEmpty.classList.remove("d-none");
               }
               showReservationSuccess(successMessage);
             } catch (err) {
               btn.disabled = false;
               btn.innerHTML = originalHtml;
-              window.alert(err.message || '예약 상태 변경 중 오류가 발생했습니다.');
+              window.alert(err.message || "예약 상태 변경 중 오류가 발생했습니다.");
             }
           });
 
@@ -546,7 +657,16 @@
       }
     })();
   </script>
+
+
 </div>
+
+
+
+
+
+
+
 
 
 
