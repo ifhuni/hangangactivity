@@ -70,6 +70,8 @@
               <th scope="col">카테고리</th>
               <th scope="col">위치</th>
               <th scope="col">운영일시</th>
+              <th scope="col">정원(명)</th>
+              <th scope="col">예약인원</th>
               <th scope="col" class="text-end">상태</th>
             </tr>
           </thead>
@@ -147,7 +149,7 @@
           <h5 class="modal-title fw-bold">활동 등록</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form id="activityCreateForm" class="needs-validation" novalidate>`r`n          <input type="hidden" name="activityId" id="activityIdField">
+        <form id="activityCreateForm" class="needs-validation" novalidate><input type="hidden" name="activityId" id="activityIdField">
           <div class="modal-body">
             <div class="row g-3">
               <div class="col-md-6">
@@ -209,7 +211,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">닫기</button>
-            <button type="submit" class="btn btn-primary" id="activityModalSubmit"><span class="spinner-border spinner-border-sm me-2 d-none" id="activityCreateSpinner" role="status" aria-hidden="true"></span><span data-role="activity-submit-label">등록</span>`r`n            </button>
+            <button type="submit" class="btn btn-primary" id="activityModalSubmit"><span class="spinner-border spinner-border-sm me-2 d-none" id="activityCreateSpinner" role="status" aria-hidden="true"></span><span data-role="activity-submit-label">등록</span></button>
           </div>
         </form>
       </div>
@@ -383,12 +385,17 @@
               tr.dataset.activityId = row.id != null ? String(row.id) : "";
               tr.__activityData = row;
               const statusHtml = `<span class="badge bg-${statusBadge(row.status)}">${escapeHtml(row.status || "")}</span>`;
+              const capacity = row.capacity != null ? String(row.capacity) : "";
+              const currentParticipants = row.currentParticipants != null ? String(row.currentParticipants)
+                      : (row.reservationsCount != null ? String(row.reservationsCount) : "");
               tr.innerHTML = `
-                <td><button type="button" class="btn btn-link p-0" data-role="activity-edit">${escapeHtml(row.title || "")}</button></td>
-                <td>${escapeHtml(row.category || "")}</td>
-                <td>${escapeHtml(row.location || "")}</td>
-                <td>${formatInterval(row.startAt, row.endAt)}</td>
-                <td class="text-end">${statusHtml}</td>
+              <td><button type="button" class="btn btn-link p-0" data-role="activity-edit">${escapeHtml(row.title || "")}</button></td>
+              <td>${escapeHtml(row.category || "")}</td>
+              <td>${escapeHtml(row.location || "")}</td>
+              <td>${formatInterval(row.startAt, row.endAt)}</td>
+              <td>${escapeHtml(capacity)}</td>
+              <td>${escapeHtml(currentParticipants)}</td>
+              <td class="text-end">${statusHtml}</td>
               `;
               activitiesTbody?.appendChild(tr);
             });
