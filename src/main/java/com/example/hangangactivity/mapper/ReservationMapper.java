@@ -17,8 +17,12 @@ public interface ReservationMapper {
 
     ReservationPending findPendingById(@Param("reservationId") Long reservationId);
 
+    List<ReservationPending> findByActivityIdAndStatus(@Param("activityId") Long activityId,
+                                                       @Param("status") String status);
+
     int updateStatus(@Param("reservationId") Long reservationId,
                      @Param("status") String status);
 
     int insert(Reservation reservation);
 }
+

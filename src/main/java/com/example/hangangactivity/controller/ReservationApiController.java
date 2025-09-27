@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.hangangactivity.dto.ReservationParticipantResponse;
 import com.example.hangangactivity.dto.ReservationPendingResponse;
 import com.example.hangangactivity.service.ReservationService;
 
@@ -38,6 +39,19 @@ public class ReservationApiController {
         String role = (String) session.getAttribute(AuthController.SESSION_COMPANY_ROLE);
 
         List<ReservationPendingResponse> result = reservationService.listPendingForCompany(userId, role, companyId);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/activity/{activityId}")
+    public ResponseEntity<List<ReservationParticipantResponse>> listParticipantsByActivity(@PathVariable("activityId") Long activityId,
+                                                                                            HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        ensureAuthenticated(session);
+
+        Long userId = (Long) session.getAttribute(AuthController.SESSION_COMPANY_USER_ID);
+        String role = (String) session.getAttribute(AuthController.SESSION_COMPANY_ROLE);
+
+        List<ReservationParticipantResponse> result = reservationService.listParticipantsForActivity(userId, role, activityId);
         return ResponseEntity.ok(result);
     }
 

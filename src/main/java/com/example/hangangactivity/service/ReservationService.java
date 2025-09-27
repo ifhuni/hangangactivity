@@ -15,6 +15,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.hangangactivity.dto.ReservationCreateRequest;
+import com.example.hangangactivity.dto.ReservationParticipantResponse;
 import com.example.hangangactivity.dto.ReservationPendingResponse;
 import com.example.hangangactivity.mapper.ActivityMapper;
 import com.example.hangangactivity.mapper.CompanyUserMapper;
@@ -165,6 +166,32 @@ public class ReservationService {
         };
     }
 
+    public List<ReservationParticipantResponse> listParticipantsForActivity(Long requesterUserId,
+                                                                            String requesterRole,
+                                                                            Long activityId) {
+        if (activityId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Activity id is required.");
+        }
+
+        CompanyUser user = requireUser(requesterUserId);
+        Activity activity = activityMapper.findById(activityId);
+        if (activity == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found.");
+        }
+
+        Long activityCompanyId = activity.getCompanyId() != null ? activity.getCompanyId().longValue() : null;
+        if (!isAdmin(requesterRole)) {
+            if (activityCompanyId == null || user.getCompanyId() == null || !user.getCompanyId().equals(activityCompanyId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only view reservations for your activity.");
+            }
+        }
+
+        String normalizedStatus = STATUS_CONFIRMED.toLowerCase(Locale.ROOT);
+        return reservationMapper.findByActivityIdAndStatus(activityId, normalizedStatus).stream()
+                .map(this::toParticipantResponse)
+                .collect(Collectors.toList());
+    }
+
     public List<ReservationPendingResponse> listPendingForCompany(Long requesterUserId,
                                                                   String requesterRole,
                                                                   Long companyId) {
@@ -248,6 +275,21 @@ public class ReservationService {
         return toResponse(reservation);
     }
 
+    private ReservationParticipantResponse toParticipantResponse(ReservationPending pending) {
+        ReservationParticipantResponse response = new ReservationParticipantResponse();
+        response.setId(pending.getId() != null ? pending.getId().longValue() : null);
+        response.setActivityId(pending.getActivityId() != null ? pending.getActivityId().longValue() : null);
+        response.setActivityTitle(pending.getActivityTitle());
+        response.setStartAt(combine(pending.getActivityDate(), pending.getStartTime()));
+        response.setEndAt(combine(pending.getActivityDate(), pending.getEndTime()));
+        response.setTouristName(pending.getTouristName());
+        response.setTouristEmail(pending.getTouristEmail());
+        response.setTouristNationality(pending.getTouristNationality());
+        response.setStatus(normalizeStatus(pending.getStatus()));
+        response.setSpecialRequest(pending.getSpecialRequest());
+        response.setCreatedAt(pending.getCreatedAt());
+        return response;
+    }
     private ReservationPendingResponse toResponse(ReservationPending pending) {
         ReservationPendingResponse response = new ReservationPendingResponse();
         response.setId(pending.getId() != null ? pending.getId().longValue() : null);
@@ -294,3 +336,4 @@ public class ReservationService {
         return status.trim().toUpperCase(Locale.ROOT);
     }
 }
+
