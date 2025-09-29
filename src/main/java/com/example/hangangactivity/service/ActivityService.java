@@ -26,6 +26,8 @@ public class ActivityService {
 
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String STATUS_APPROVED = "APPROVED";
+    private static final String STATUS_PENDING = "PENDING";
+    private static final String STATUS_UNASSIGNED = "UNASSIGNED";
     private static final String DEFAULT_STATUS = "DRAFT";
 
     private final ActivityMapper activityMapper;
@@ -63,10 +65,10 @@ public class ActivityService {
             companyId = user.getCompanyId();
         }
 
-        validateCompanyAccess(user, isAdmin, companyId, true);
+        String membershipStatus = validateCompanyAccess(user, isAdmin, companyId, true);
 
         Activity activity = new Activity();
-        applyRequestToActivity(activity, null, request, companyId);
+        applyRequestToActivity(activity, null, request, companyId, membershipStatus, isAdmin);
         activityMapper.insert(activity);
 
         Activity inserted = activityMapper.findById(activity.getId().longValue());
@@ -80,9 +82,9 @@ public class ActivityService {
 
         Activity existing = requireActivity(activityId);
         Long companyId = existing.getCompanyId() != null ? existing.getCompanyId().longValue() : null;
-        validateCompanyAccess(user, isAdmin, companyId, true);
+        String membershipStatus = validateCompanyAccess(user, isAdmin, companyId, true);
 
-        applyRequestToActivity(existing, existing, request, companyId);
+        applyRequestToActivity(existing, existing, request, companyId, membershipStatus, isAdmin);
         existing.setId(activityId.intValue());
         int updated = activityMapper.update(existing);
         if (updated == 0) {
@@ -101,7 +103,12 @@ public class ActivityService {
         return toResponse(activity);
     }
 
-    private void applyRequestToActivity(Activity target, Activity existing, ActivityCreateRequest request, Long companyId) {
+    private void applyRequestToActivity(Activity target,
+                                        Activity existing,
+                                        ActivityCreateRequest request,
+                                        Long companyId,
+                                        String membershipStatus,
+                                        boolean isAdmin) {
         if (companyId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company id is required.");
         }
@@ -137,6 +144,14 @@ public class ActivityService {
             status = existing.getStatus();
         }
         if (!StringUtils.hasText(status)) {
+            status = DEFAULT_STATUS;
+        }
+
+        boolean isPendingCompany = !isAdmin && STATUS_PENDING.equalsIgnoreCase(membershipStatus);
+        if (isPendingCompany) {
+            if (existing != null && StringUtils.hasText(existing.getStatus()) && !DEFAULT_STATUS.equalsIgnoreCase(existing.getStatus())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Pending approval companies can only manage draft activities.");
+            }
             status = DEFAULT_STATUS;
         }
 
@@ -205,18 +220,24 @@ public class ActivityService {
         return LocalDateTime.of(date, time);
     }
 
-    private void validateCompanyAccess(CompanyUser user, boolean isAdmin, Long companyId, boolean requireApproval) {
+    private String validateCompanyAccess(CompanyUser user, boolean isAdmin, Long companyId, boolean requireApproval) {
         if (companyId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company id is required.");
         }
-        if (!isAdmin) {
-            if (!Objects.equals(user.getCompanyId(), companyId)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only manage activities for your company.");
-            }
-            if (requireApproval && !STATUS_APPROVED.equalsIgnoreCase(StringUtils.trimAllWhitespace(String.valueOf(user.getMembershipStatus())))) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company approval must be completed before managing activities.");
-            }
+        if (isAdmin) {
+            return normalizeStatus(user.getMembershipStatus());
         }
+        if (!Objects.equals(user.getCompanyId(), companyId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only manage activities for your company.");
+        }
+        String normalizedStatus = normalizeStatus(user.getMembershipStatus());
+        if (STATUS_UNASSIGNED.equals(normalizedStatus)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company registration must be completed before managing activities.");
+        }
+        if (requireApproval && !(STATUS_APPROVED.equals(normalizedStatus) || STATUS_PENDING.equals(normalizedStatus))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company approval must be completed before managing activities.");
+        }
+        return normalizedStatus;
     }
 
     private CompanyUser requireUser(Long userId) {
@@ -228,6 +249,10 @@ public class ActivityService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login is required.");
         }
         return user;
+    }
+
+    private String normalizeStatus(String status) {
+        return StringUtils.hasText(status) ? status.trim().toUpperCase(Locale.ROOT) : STATUS_UNASSIGNED;
     }
 
     private boolean isAdminRole(String role) {

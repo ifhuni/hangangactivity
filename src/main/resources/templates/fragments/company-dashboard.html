@@ -42,7 +42,6 @@
     <div class="card shadow-sm rounded-4 p-3 mb-4">
       <div class="d-flex flex-wrap gap-2">
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#activityCreateModal">활동 등록</button>
-        <button class="btn btn-outline-primary" onclick="alert('예약 관리 화면은 추후 연동될 예정입니다.')">예약 관리</button>
         <button class="btn btn-outline-primary" onclick="alert('정산/통계 화면은 추후 연동될 예정입니다.')">정산/통계</button>
       </div>
     </div>
@@ -387,18 +386,14 @@
               const statusHtml = `<span class="badge bg-${statusBadge(row.status)}">${escapeHtml(row.status || "")}</span>`;
               const capacity = row.capacity != null ? String(row.capacity) : "";
               const currentParticipants = row.currentParticipants != null ? String(row.currentParticipants)
-                      : (row.reservationsCount != null ? String(row.reservationsCount) : "0");
+                      : (row.reservationsCount != null ? String(row.reservationsCount) : "");
               tr.innerHTML = `
               <td><button type="button" class="btn btn-link p-0" data-role="activity-edit">${escapeHtml(row.title || "")}</button></td>
               <td>${escapeHtml(row.category || "")}</td>
               <td>${escapeHtml(row.location || "")}</td>
               <td>${formatInterval(row.startAt, row.endAt)}</td>
               <td>${escapeHtml(capacity)}</td>
-              <td>
-                <button type="button" class="btn btn-link p-0" data-role="activity-reservations" data-activity-title="${escapeHtml(row.title || "")}">
-                  ${escapeHtml(currentParticipants)}
-                </button>
-              </td>
+              <td>${escapeHtml(currentParticipants)}</td>
               <td class="text-end">${statusHtml}</td>
               `;
               activitiesTbody?.appendChild(tr);
@@ -448,156 +443,6 @@
           window.bootstrap.Modal.getOrCreateInstance(activityModal)?.show();
         }
       });
-      
-      activitiesTbody.addEventListener("click", (event) => {
-        console.log('role : activity-reservation');
-        const button = event.target.closest('[data-role="activity-reservations"]');
-        if (!button) {
-          return;
-        }
-        event.preventDefault();
-        const row = button.closest("tr");
-        const activityId = row?.dataset.activityId;
-        if (!activityId) {
-          return;
-        }
-        const activityData = row?.__activityData;
-        const title = button.dataset.activityTitle || activityData?.title || "";
-        loadActivityParticipants(activityId, title);
-      });
-
-      const loadActivityParticipants = async (activityId, activityTitle) => {
-        resetParticipantsModal(activityTitle);
-        const modalInstance = window.bootstrap?.Modal?.getOrCreateInstance(participantsModalEl);
-        participantsSpinner?.classList.remove("d-none");
-        modalInstance?.show();
-        try {
-          const response = await fetch(`/api/reservations/activity/${encodeURIComponent(activityId)}`, {
-            headers: { "Accept": "application/json" },
-            credentials: "same-origin",
-            cache: "no-store"
-          });
-          if (!response.ok) {
-            throw new Error("예약 정보를 불러오지 못했습니다.");
-          }
-          const data = await response.json();
-          if (!Array.isArray(data) || data.length === 0) {
-            participantsEmpty?.classList.remove("d-none");
-            return;
-          }
-          renderParticipants(data);
-          participantsTableWrapper?.classList.remove("d-none");
-        } catch (error) {
-          if (participantsError) {
-            participantsError.textContent = error.message || "예약 정보를 불러오는 중 오류가 발생했습니다.";
-            participantsError.classList.remove("d-none");
-          }
-        } finally {
-          participantsSpinner?.classList.add("d-none");
-        }
-      };
-      const resetParticipantsModal = (activityTitle) => {
-        if (participantsModalTitle) {
-          participantsModalTitle.textContent = activityTitle ? `${activityTitle} 예약 인원` : "예약 인원";
-        }
-        participantsError?.classList.add("d-none");
-        participantsEmpty?.classList.add("d-none");
-        participantsTableWrapper?.classList.add("d-none");
-        participantsSpinner?.classList.add("d-none");
-        participantsTbody.innerHTML = "";
-      };
-      const participantsModalEl = document.getElementById("activityParticipantsModal");
-    if (!participantsModalEl) {
-      return;
-    }
-    const participantsModalTitle = participantsModalEl.querySelector('[data-role="participants-modal-title"]');
-    const participantsSpinner = participantsModalEl.querySelector('[data-role="participants-spinner"]');
-    const participantsError = participantsModalEl.querySelector('[data-role="participants-error"]');
-    const participantsEmpty = participantsModalEl.querySelector('[data-role="participants-empty"]');
-    const participantsTableWrapper = participantsModalEl.querySelector('[data-role="participants-table-wrapper"]');
-    const participantsTbody = participantsModalEl.querySelector('[data-role="participants-tbody"]');
-
-    if (!participantsTbody) {
-      return;
-    }
-
-    const escapeHtml = (str) => String(str || "").replace(/[&<>"']/g, (m) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[m]));
-
-    const formatDateTimeValue = (value) => {
-      if (!value) {
-        return "";
-      }
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) {
-        return "";
-      }
-      const yyyy = date.getFullYear();
-      const mm = String(date.getMonth() + 1).padStart(2, "0");
-      const dd = String(date.getDate()).padStart(2, "0");
-      const hh = String(date.getHours()).padStart(2, "0");
-      const min = String(date.getMinutes()).padStart(2, "0");
-      return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
-    };
-
-    const reservationStatusBadge = (status) => {
-      const normalized = String(status || "").toUpperCase();
-      let variant = "secondary";
-      if (normalized === "CONFIRMED") {
-        variant = "success";
-      } else if (normalized === "PENDING") {
-        variant = "warning";
-      } else if (normalized === "CANCELED") {
-        variant = "danger";
-      }
-      return `<span class="badge bg-${variant}">${escapeHtml(normalized)}</span>`;
-    };
-
-    
-
-    const renderParticipants = (items) => {
-      participantsTbody.innerHTML = "";
-      items.forEach((item, index) => {
-        const row = document.createElement("tr");
-        const specialRequestHtml = item.specialRequest ? escapeHtml(item.specialRequest).replace(/\n/g, "<br>") : "-";
-        row.innerHTML = `
-          <td class="text-center">${index + 1}</td>
-          <td>${escapeHtml(item.touristName)}</td>
-          <td>${escapeHtml(item.touristEmail)}</td>
-          <td>${escapeHtml(item.touristNationality)}</td>
-          <td class="text-center">${reservationStatusBadge(item.status)}</td>
-          <td>${specialRequestHtml}</td>
-          <td>${escapeHtml(formatDateTimeValue(item.createdAt))}</td>
-        `;
-        participantsTbody.appendChild(row);
-      });
-    };
-
-    
-
-    const transformRow = (row) => {
-      if (!row) {
-        return;
-      }
-      const cells = row.children;
-      if (!cells || cells.length < 6) {
-        return;
-      }
-      const cell = cells[5];
-      if (!cell || cell.querySelector('[data-role="activity-reservations"]')) {
-        return;
-      }
-      const count = (cell.textContent || "").trim() || "0";
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "btn btn-link p-0";
-      button.dataset.role = "activity-reservations";
-      const activityData = row.__activityData || {};
-      const titleSource = activityData.title || row.querySelector('[data-role="activity-edit"]')?.textContent?.trim() || "";
-      button.dataset.activityTitle = titleSource;
-      button.textContent = count;
-      cell.textContent = "";
-      cell.appendChild(button);
-    };
 
       activityForm?.addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -817,11 +662,23 @@
         }
       }
     })();
-    
   </script>
+
+
 </div>
 
-<!-- 활동 예약 인원 모달 -->
+
+
+
+
+
+
+
+
+
+
+
+
 <div class="modal fade" id="activityParticipantsModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content rounded-4 shadow">
@@ -865,6 +722,165 @@
       return;
     }
 
-    
+    const participantsModalEl = document.getElementById("activityParticipantsModal");
+    if (!participantsModalEl) {
+      return;
+    }
+    const participantsModalTitle = participantsModalEl.querySelector('[data-role="participants-modal-title"]');
+    const participantsSpinner = participantsModalEl.querySelector('[data-role="participants-spinner"]');
+    const participantsError = participantsModalEl.querySelector('[data-role="participants-error"]');
+    const participantsEmpty = participantsModalEl.querySelector('[data-role="participants-empty"]');
+    const participantsTableWrapper = participantsModalEl.querySelector('[data-role="participants-table-wrapper"]');
+    const participantsTbody = participantsModalEl.querySelector('[data-role="participants-tbody"]');
+
+    if (!participantsTbody) {
+      return;
+    }
+
+    const escapeHtml = (str) => String(str || "").replace(/[&<>"']/g, (m) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[m]));
+
+    const formatDateTimeValue = (value) => {
+      if (!value) {
+        return "";
+      }
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return "";
+      }
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, "0");
+      const dd = String(date.getDate()).padStart(2, "0");
+      const hh = String(date.getHours()).padStart(2, "0");
+      const min = String(date.getMinutes()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+    };
+
+    const reservationStatusBadge = (status) => {
+      const normalized = String(status || "").toUpperCase();
+      let variant = "secondary";
+      if (normalized === "CONFIRMED") {
+        variant = "success";
+      } else if (normalized === "PENDING") {
+        variant = "warning";
+      } else if (normalized === "CANCELED") {
+        variant = "danger";
+      }
+      return `<span class="badge bg-${variant}">${escapeHtml(normalized)}</span>`;
+    };
+
+    const resetParticipantsModal = (activityTitle) => {
+      if (participantsModalTitle) {
+        participantsModalTitle.textContent = activityTitle ? `${activityTitle} 예약 인원` : "예약 인원";
+      }
+      participantsError?.classList.add("d-none");
+      participantsEmpty?.classList.add("d-none");
+      participantsTableWrapper?.classList.add("d-none");
+      participantsSpinner?.classList.add("d-none");
+      participantsTbody.innerHTML = "";
+    };
+
+    const renderParticipants = (items) => {
+      participantsTbody.innerHTML = "";
+      items.forEach((item, index) => {
+        const row = document.createElement("tr");
+        const specialRequestHtml = item.specialRequest ? escapeHtml(item.specialRequest).replace(/\n/g, "<br>") : "-";
+        row.innerHTML = `
+          <td class="text-center">${index + 1}</td>
+          <td>${escapeHtml(item.touristName)}</td>
+          <td>${escapeHtml(item.touristEmail)}</td>
+          <td>${escapeHtml(item.touristNationality)}</td>
+          <td class="text-center">${reservationStatusBadge(item.status)}</td>
+          <td>${specialRequestHtml}</td>
+          <td>${escapeHtml(formatDateTimeValue(item.createdAt))}</td>
+        `;
+        participantsTbody.appendChild(row);
+      });
+    };
+
+    const loadActivityParticipants = async (activityId, activityTitle) => {
+      resetParticipantsModal(activityTitle);
+      const modalInstance = window.bootstrap?.Modal?.getOrCreateInstance(participantsModalEl);
+      participantsSpinner?.classList.remove("d-none");
+      modalInstance?.show();
+      try {
+        const response = await fetch(`/api/reservations/activity/${encodeURIComponent(activityId)}`, {
+          headers: { "Accept": "application/json" },
+          credentials: "same-origin",
+          cache: "no-store"
+        });
+        if (!response.ok) {
+          throw new Error("예약 정보를 불러오지 못했습니다.");
+        }
+        const data = await response.json();
+        if (!Array.isArray(data) || data.length === 0) {
+          participantsEmpty?.classList.remove("d-none");
+          return;
+        }
+        renderParticipants(data);
+        participantsTableWrapper?.classList.remove("d-none");
+      } catch (error) {
+        if (participantsError) {
+          participantsError.textContent = error.message || "예약 정보를 불러오는 중 오류가 발생했습니다.";
+          participantsError.classList.remove("d-none");
+        }
+      } finally {
+        participantsSpinner?.classList.add("d-none");
+      }
+    };
+
+    const transformRow = (row) => {
+      if (!row) {
+        return;
+      }
+      const cells = row.children;
+      if (!cells || cells.length < 6) {
+        return;
+      }
+      const cell = cells[5];
+      if (!cell || cell.querySelector('[data-role="activity-reservations"]')) {
+        return;
+      }
+      const count = (cell.textContent || "").trim() || "0";
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn btn-link p-0";
+      button.dataset.role = "activity-reservations";
+      const activityData = row.__activityData || {};
+      const titleSource = activityData.title || row.querySelector('[data-role="activity-edit"]')?.textContent?.trim() || "";
+      button.dataset.activityTitle = titleSource;
+      button.textContent = count;
+      cell.textContent = "";
+      cell.appendChild(button);
+    };
+
+    Array.from(activitiesTbody.children).forEach(transformRow);
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes?.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE && node.matches("tr")) {
+            transformRow(node);
+          }
+        });
+      });
+    });
+
+    observer.observe(activitiesTbody, { childList: true });
+
+    activitiesTbody.addEventListener("click", (event) => {
+      const button = event.target.closest('[data-role="activity-reservations"]');
+      if (!button) {
+        return;
+      }
+      event.preventDefault();
+      const row = button.closest("tr");
+      const activityId = row?.dataset.activityId;
+      if (!activityId) {
+        return;
+      }
+      const activityData = row?.__activityData;
+      const title = button.dataset.activityTitle || activityData?.title || "";
+      loadActivityParticipants(activityId, title);
+    });
   })();
 </script>
