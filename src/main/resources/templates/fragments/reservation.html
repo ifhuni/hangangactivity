@@ -1,27 +1,25 @@
 <!-- fragments/reservation.html -->
-<div th:fragment="reservation" style="background-color:#0d6efd">
-  <div class="container-fluid mt-5">
-    <div class="row">
+<div th:fragment="reservation" style="background-color: #f8f9fa; min-height: 100vh; padding-top: 5rem; padding-bottom: 5rem;">
+  <div class="container">
+    <div class="row g-5">
 
-      <!-- 좌측 사이드바 + 검색 조건 -->
-      <div class="col-xl-3 col-lg-4 mb-4">
-        <div class="position-sticky" style="top: 100px;">
-          <div class="card shadow-sm p-3">
-            <h5 class="mb-3">검색 조건</h5>
+      <!-- 좌측 사이드바 -->
+      <div class="col-lg-3">
+        <div class="position-sticky" style="top: 7rem;">
+          <div class="card shadow-sm border-0 rounded-4 p-3">
+            <h5 class="fw-bold mb-4 text-center" style="color: #343a40;">활동 검색</h5>
 
             <!-- 지역 선택 -->
             <div class="mb-3">
-              <label class="form-label d-block">지역</label>
-              <select id="regionSelectSide" class="form-select form-select-sm">
+              <label for="regionSelectSide" class="form-label small text-muted">지역</label>
+              <select id="regionSelectSide" class="form-select form-select-sm rounded-3">
                 <option value="" th:selected="${param.region} == null or ${param.region} == ''">전체</option>
                 <option value="광진구" th:selected="${param.region} == '광진구'">광진구</option>
                 <option value="강남구" th:selected="${param.region} == '강남구'">강남구</option>
                 <option value="마포구" th:selected="${param.region} == '마포구'">마포구</option>
                 <option value="송파구" th:selected="${param.region} == '송파구'">송파구</option>
                 <option value="양천구" th:selected="${param.region} == '양천구'">양천구</option>
-                <!-- home에서 온 값이 위 옵션에 없을 때도 선택 표시되도록 동적 옵션 추가 -->
-                <option th:if="${param.region != null and param.region != '' and 
-                                  !(param.region == '광진구' or param.region == '강남구' or param.region == '마포구' or param.region == '송파구' or param.region == '양천구')}"
+                <option th:if="${param.region != null and param.region != '' and not #lists.contains({'광진구', '강남구', '마포구', '송파구', '양천구'}, param.region)}"
                         th:value="${param.region}"
                         th:text="${param.region}"
                         selected>
@@ -31,25 +29,20 @@
 
             <!-- 날짜 범위 -->
             <div class="mb-3">
-              <label class="form-label">날짜</label>
-              <div class="input-group input-group-sm">
-                <input type="date" id="dateStartSide" class="form-control" th:value="${param.dateStart}">
-                <span class="input-group-text">~</span>
-                <input type="date" id="dateEndSide" class="form-control" th:value="${param.dateEnd}">
-              </div>
+              <label class="form-label small text-muted">Date</label>
+              <input type="date" id="dateStartSide" class="form-control form-control-sm rounded-3 mb-2" th:value="${param.dateStart}">
+              <input type="date" id="dateEndSide" class="form-control form-control-sm rounded-3" th:value="${param.dateEnd}">
             </div>
 
             <!-- 활동 유형 -->
             <div class="mb-3">
-              <label class="form-label d-block">활동 유형</label>
-              <select id="activityTypeSide" class="form-select form-select-sm">
+              <label for="activityTypeSide" class="form-label small text-muted">활동 유형</label>
+              <select id="activityTypeSide" class="form-select form-select-sm rounded-3">
                 <option value="" th:selected="${param.activityType} == null or ${param.activityType} == ''">전체</option>
                 <option value="육상" th:selected="${param.activityType} == '육상'">육상</option>
                 <option value="수상" th:selected="${param.activityType} == '수상'">수상</option>
                 <option value="공중" th:selected="${param.activityType} == '공중'">공중</option>
-                <!-- 동적 옵션 추가 -->
-                <option th:if="${param.activityType != null and param.activityType != '' and 
-                    !(param.activityType == '육상' or param.activityType == '수상' or param.activityType == '공중')}"
+                <option th:if="${param.activityType != null and param.activityType != '' and not #lists.contains({'육상', '수상', '공중'}, param.activityType)}"
                         th:value="${param.activityType}"
                         th:text="${param.activityType}"
                         selected>
@@ -58,13 +51,13 @@
             </div>
 
             <!-- 인원 수 -->
-            <div class="mb-3">
-              <label class="form-label d-block">인원</label>
-              <input type="number" id="peopleCountSide" class="form-control form-control-sm" min="1" th:value="${param.peopleCount}">
+            <div class="mb-4">
+              <label for="peopleCountSide" class="form-label small text-muted">인원</label>
+              <input type="number" id="peopleCountSide" class="form-control form-control-sm rounded-3" min="1" th:value="${param.peopleCount}">
             </div>
 
             <div class="d-grid">
-              <button class="btn btn-primary btn-sm"
+              <button class="btn btn-primary fw-bold rounded-pill"
                 onclick="(function(e){
                   e.preventDefault();
                   var r=document.getElementById('regionSelectSide')?.value||'';
@@ -80,49 +73,47 @@
                   if(pc) params.push('peopleCount='+encodeURIComponent(pc));
                   var url='/fragments/reservation'+(params.length?('?'+params.join('&')):'');
                   loadPage(e, url);
-                })(event)">검색</button>
+                })(event)">
+                <i class="bi bi-search me-2"></i>검색</button>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 중앙 리스트 영역 -->
-      <div class="col-xl-6 col-lg-7 px-3">
-        <section class="bg-light rounded-4 shadow-sm px-4 py-4"
-          style="height: calc(100vh - 100px); display: flex; flex-direction: column; margin-top: 50px;">
+      <div class="col-lg-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="fw-bolder mb-0" style="color: #343a40;">활동 목록</h2>
+          <span class="text-muted small" th:text="${#lists.size(activities)} + ' 건 검색'"></span>
+        </div>
 
-          <!-- 헤더 -->
-          <div style="flex: 0 0 auto; position: sticky; top: 0; background: #ffffff; padding-top: 10px; padding-bottom: 10px; z-index: 10; border-bottom: 1px solid #dee2e6;">
-            <h4 class="fw-bold mb-0">예약 가능한 활동</h4>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+          <!-- 활동 없음 메시지 -->
+          <div class="col-12" th:if="${#lists.isEmpty(activities)}">
+            <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+              <i class="bi bi-emoji-frown fs-1 text-muted"></i>
+              <p class="mt-3 mb-0 text-muted">No activities match your search.</p>
+            </div>
           </div>
 
-          <!-- 예약 리스트 -->
-          <div style="flex: 1 1 auto; overflow-y: auto; margin-top: 10px;">
-            <div class="row g-3">
-              <!-- DB 활동 리스트 -->
-              <div class="col-12" th:if="${#lists.isEmpty(activities)}">
-                <div class="text-muted text-center py-5">표시할 활동이 없습니다.</div>
-              </div>
-              <div class="col-12" th:each="act : ${activities}">
-                <div class="card border-0 shadow-sm rounded-3 p-2" style="background-color: #ffffff;">
-                  <div class="row g-0 align-items-center">
-                    <div class="col-auto">
-                      <img src="/img/climb_1.jpg" alt="활동 썸네일" class="rounded-2" style="width: 80px; height: 80px; object-fit: cover;">
-                    </div>
-                    <div class="col px-3">
-                      <h6 class="mb-1 fw-semibold" th:text="${act.title}">활동 제목</h6>
-                      <div class="small text-muted d-flex flex-wrap gap-3">
-                        <span><strong>위치:</strong> <span th:text="${act.location}">위치</span></span>
-                        <span><strong>날짜:</strong> <span th:text="${act.activityDate}">2025-08-01</span></span>
-                      </div>
-                      <div class="small text-muted d-flex flex-wrap gap-3 mt-1">
-                        <span><strong>정원:</strong> <span th:text="${act.maxParticipants}">0</span>명</span>
-                        <span><strong>참여:</strong> <span th:text="${act.currentParticipants}">0</span>명</span>
-                      </div>
-                    </div>
-                    <div class="col-auto px-2">
-                      <button class="btn btn-outline-primary btn-sm"
-                        data-bs-toggle="modal" data-bs-target="#reservationModal"
+          <!-- DB 활동 리스트 -->
+          <div class="col" th:each="act : ${activities}">
+            <div class="card h-100 border-0 shadow-sm rounded-4 activity-card">
+              <img th:src="@{/img/climb_1.jpg}" class="card-img-top rounded-top-4" alt="Activity Image" style="height: 200px; object-fit: cover;">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title fw-bold" th:text="${act.title}">Activity Title</h5>
+                <p class="card-text small text-muted flex-grow-1">
+                  <span class="d-block"><i class="bi bi-geo-alt-fill me-2"></i><span th:text="${act.location}">Location</span></span>
+                  <span class="d-block"><i class="bi bi-calendar-event-fill me-2"></i><span th:text="${act.activityDate}">날짜</span></span>
+                </p>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                   <div class="progress" style="height: 20px; width: 100px;">
+                    <div class="progress-bar" role="progressbar" th:style="'width: ' + (${act.currentParticipants} * 100 / ${act.maxParticipants}) + '%;'" th:aria-valuenow="${act.currentParticipants}" th:aria-valuemin="0" th:aria-valuemax="${act.maxParticipants}" th:text="${act.currentParticipants} + '/' + ${act.maxParticipants}"></div>
+                  </div>
+                </div>
+                <div class="d-grid">
+                  <button class="btn btn-primary fw-bold rounded-pill"
+                    data-bs-toggle="modal" data-bs-target="#reservationModal"
                         th:attr="
                           data-activity-id=${act.id},
                           data-title=${act.title},
@@ -132,20 +123,14 @@
                           data-end=${act.endTime},
                           data-max=${act.maxParticipants},
                           data-current=${act.currentParticipants}">
-                        예약
-                      </button>
-                    </div>
-                  </div>
+                    예약
+                  </button>
                 </div>
               </div>
-
             </div>
           </div>
-        </section>
+        </div>
       </div>
-
-      <!-- 우측 여백 -->
-      <div class="col-xl-3 d-none d-xl-block"></div>
 
       <!-- 예약 모달 (분리된 프래그먼트 포함) -->
       <div th:replace="~{fragments/reservation-modal :: reservationModal}"></div>
@@ -154,6 +139,25 @@
   </div>
 </div>
 <style>
-  .list-group-item:hover { background-color: #eef4ff !important; }
-  .form-select-sm, .input-group-sm > .form-control { font-size: .9rem; }
+  .activity-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .activity-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+  }
+  .progress-bar {
+    background-color: #0d6efd;
+    font-size: 0.75rem;
+    font-weight: bold;
+  }
+  .btn-primary {
+      background-color: #0d6efd;
+      border-color: #0d6efd;
+  }
+  .btn-primary:hover {
+      background-color: #0b5ed7;
+      border-color: #0a58ca;
+  }
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
