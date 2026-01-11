@@ -1,5 +1,7 @@
 package com.example.hangangactivity.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -13,4 +15,8 @@ public interface CompanyMapper {
     Company findById(@Param("id") Long id);
 
     void updateVerification(@Param("id") Long id, @Param("verified") boolean verified);
+
+    List<Company> findAll();
+
+    void updateVerificationStatus(@Param("companyId") Long companyId, @Param("isVerified") boolean isVerified);
 }

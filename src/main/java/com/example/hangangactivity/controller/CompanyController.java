@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.hangangactivity.dto.CompanyApproveRequest;
 import com.example.hangangactivity.dto.CompanyRegisterRequest;
 import com.example.hangangactivity.dto.CompanyRegistrationResponse;
+import com.example.hangangactivity.dto.CompanyVerificationRequest;
 import com.example.hangangactivity.dto.PendingCompanyRequest;
+import com.example.hangangactivity.model.Company;
 import com.example.hangangactivity.model.CompanyUser;
 import com.example.hangangactivity.service.CompanyService;
 
@@ -89,6 +91,27 @@ public class CompanyController {
         }
 
         companyService.approveCompany(userId, approveRequest.getCompanyId());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Company>> getAllCompanies(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (!isAdmin(session)) {
+            return ResponseEntity.status(403).build();
+        }
+        return ResponseEntity.ok(companyService.getAllCompanies());
+    }
+
+    @PostMapping("/{companyId}/verify")
+    public ResponseEntity<Void> verifyCompany(@PathVariable Long companyId,
+                                              @RequestBody CompanyVerificationRequest requestBody,
+                                              HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (!isAdmin(session)) {
+            return ResponseEntity.status(403).build();
+        }
+        companyService.updateCompanyVerificationStatus(companyId, requestBody.isVerified());
         return ResponseEntity.ok().build();
     }
 

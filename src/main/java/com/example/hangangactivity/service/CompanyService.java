@@ -108,6 +108,15 @@ public class CompanyService {
         companyUserMapper.updateMembershipStatus(targetUserId, STATUS_APPROVED);
     }
 
+    public List<Company> getAllCompanies() {
+        return companyMapper.findAll();
+    }
+
+    @Transactional
+    public void updateCompanyVerificationStatus(Long companyId, boolean isVerified) {
+        companyMapper.updateVerificationStatus(companyId, isVerified);
+    }
+
     private String trimOrNull(String value) {
         if (!StringUtils.hasText(value)) {
             return null;

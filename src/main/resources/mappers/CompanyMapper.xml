@@ -34,4 +34,16 @@
     WHERE id = #{id}
   </update>
 
+  <select id="findAll" resultMap="CompanyResultMap">
+    SELECT id, company_name, business_number, ceo_name, ceo_contact, office_contact, office_address, is_verified, created_at
+    FROM companies
+    ORDER BY created_at DESC
+  </select>
+
+  <update id="updateVerificationStatus">
+    UPDATE companies
+    SET is_verified = #{isVerified}
+    WHERE id = #{companyId}
+  </update>
+
 </mapper>

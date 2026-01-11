@@ -138,6 +138,39 @@
         </table>
       </div>
     </div>
+
+    <!-- 업체 목록 (Admin 전용) -->
+    <div id="adminAllCompaniesSection" class="card shadow-sm rounded-4 p-3 mb-4" th:classappend="${#strings.equalsIgnoreCase(companyRole, 'ADMIN')} ? '' : ' d-none'">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="fw-bold mb-0">업체 목록</h5>
+        <div class="d-flex gap-2">
+          <div class="spinner-border spinner-border-sm text-secondary d-none" role="status" id="allCompaniesSpinner">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btnRefreshAllCompanies">새로고침</button>
+        </div>
+      </div>
+      <div class="small text-muted mb-2">전체 업체를 관리하고 활성화/비활성화할 수 있습니다.</div>
+      <div data-role="all-companies-error" class="alert alert-danger d-none"></div>
+      <div data-role="all-companies-success" class="alert alert-success d-none">업체 상태가 변경되었습니다.</div>
+      <div data-role="all-companies-empty" class="alert alert-info d-none">등록된 업체가 없습니다.</div>
+      <div class="table-responsive d-none" data-role="all-companies-table-wrapper">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+          <tr>
+            <th scope="col">업체명</th>
+            <th scope="col">사업자등록번호</th>
+            <th scope="col">대표자</th>
+            <th scope="col">연락처</th>
+            <th scope="col" class="text-center">상태</th>
+            <th scope="col" class="text-end">관리</th>
+          </tr>
+          </thead>
+          <tbody data-role="all-companies-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
   </section>
 
   <!-- 활동 등록 모달 -->
@@ -661,6 +694,144 @@
           loadReservations();
         }
       }
+    })();
+  </script>
+
+  <!-- 스크립트: 모든 업체 관리 -->
+  <script>
+    (function () {
+      const section = document.getElementById("adminAllCompaniesSection");
+      if (!section) return;
+
+      const spinner = section.querySelector("#allCompaniesSpinner");
+      const errorEl = section.querySelector('[data-role="all-companies-error"]');
+      const successEl = section.querySelector('[data-role="all-companies-success"]');
+      const emptyEl = section.querySelector('[data-role="all-companies-empty"]');
+      const tableWrapper = section.querySelector('[data-role="all-companies-table-wrapper"]');
+      const tbody = section.querySelector('[data-role="all-companies-table-body"]');
+      const refreshBtn = section.querySelector("#btnRefreshAllCompanies");
+
+      const escape = (str) => String(str || "").replace(/[&<>"']/g, (m) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[m]));
+
+      function hideMessages() {
+        errorEl?.classList.add("d-none");
+        successEl?.classList.add("d-none");
+      }
+
+      function showSuccess(message) {
+        if (successEl) {
+          successEl.textContent = message || "요청이 처리되었습니다.";
+          successEl.classList.remove("d-none");
+        }
+      }
+
+      function verificationBadge(isVerified) {
+        return isVerified
+                ? `<span class="badge bg-success">활성</span>`
+                : `<span class="badge bg-secondary">비활성</span>`;
+      }
+
+      async function updateVerificationStatus(companyId, isVerified, btn) {
+        hideMessages();
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
+
+        try {
+          const res = await fetch(`/api/company/${encodeURIComponent(companyId)}/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ verified: isVerified })
+          });
+
+          if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(errorText || '상태 변경에 실패했습니다.');
+          }
+
+          showSuccess('업체 상태가 성공적으로 변경되었습니다.');
+          loadAllCompanies(); // Reload the list to show updated status
+
+        } catch (err) {
+          if (errorEl) {
+            errorEl.textContent = err.message || "오류가 발생했습니다.";
+            errorEl.classList.remove("d-none");
+          }
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+        }
+      }
+
+      async function loadAllCompanies() {
+        hideMessages();
+        spinner?.classList.remove("d-none");
+        emptyEl?.classList.add("d-none");
+        tableWrapper?.classList.add("d-none");
+        tbody && (tbody.innerHTML = "");
+
+        try {
+          const res = await fetch("/api/company/all");
+          if (!res.ok) throw new Error("업체 목록을 불러오는데 실패했습니다.");
+
+          const companies = await res.json();
+          if (!companies || companies.length === 0) {
+            emptyEl?.classList.remove("d-none");
+            return;
+          }
+
+          companies.forEach(company => {
+            const tr = document.createElement("tr");
+            tr.dataset.companyId = company.id;
+            tr.innerHTML = `
+              <td>${escape(company.companyName)}</td>
+              <td>${escape(company.businessNumber)}</td>
+              <td>${escape(company.ceoName)}</td>
+              <td>
+                <div class="small">${escape(company.ceoContact)}</div>
+                <div class="small text-muted">${escape(company.officeContact)}</div>
+              </td>
+              <td class="text-center">${verificationBadge(company.verified)}</td>
+              <td class="text-end">
+                  <div class="btn-group btn-group-sm">
+                      <button type="button" class="btn btn-outline-success" data-action="activate" ${company.verified ? 'disabled' : ''}>활성화</button>
+                      <button type="button" class="btn btn-outline-secondary" data-action="deactivate" ${!company.verified ? 'disabled' : ''}>비활성화</button>
+                  </div>
+              </td>
+            `;
+            tbody?.appendChild(tr);
+          });
+          tableWrapper?.classList.remove("d-none");
+
+        } catch (err) {
+          if (errorEl) {
+            errorEl.textContent = err.message || "오류가 발생했습니다.";
+            errorEl.classList.remove("d-none");
+          }
+        } finally {
+          spinner?.classList.add("d-none");
+        }
+      }
+
+      refreshBtn?.addEventListener("click", loadAllCompanies);
+
+      tbody?.addEventListener("click", e => {
+        const button = e.target.closest("button[data-action]");
+        if (!button) return;
+
+        const row = button.closest("tr[data-company-id]");
+        const companyId = row?.dataset.companyId;
+        if (!companyId) return;
+
+        const action = button.dataset.action;
+        if (action === 'activate') {
+          updateVerificationStatus(companyId, true, button);
+        } else if (action === 'deactivate') {
+          updateVerificationStatus(companyId, false, button);
+        }
+      });
+
+      // Initial load
+      loadAllCompanies();
     })();
   </script>
 
