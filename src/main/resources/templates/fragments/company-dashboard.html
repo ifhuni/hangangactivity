@@ -83,7 +83,7 @@
     
     <div id="reservationPendingSection" class="card shadow-sm rounded-4 p-3 mb-4">
       <div class="d-flex justify-content-between align-items-center mb-2">
-        <h5 class="fw-bold mb-0">예약 승인 대기</h5>
+        <h5 class="fw-bold mb-0">예약 신청 인원</h5>
         <div class="d-flex gap-2">
           <div class="spinner-border spinner-border-sm text-secondary d-none" role="status" data-role="reservations-spinner">
             <span class="visually-hidden">Loading...</span>
@@ -91,10 +91,10 @@
           <button type="button" class="btn btn-sm btn-outline-secondary" data-role="reservations-refresh">새로고침</button>
         </div>
       </div>
-      <div class="small text-muted mb-2">승인 대기 중인 예약을 확인하고 처리할 수 있습니다.</div>
+      <div class="small text-muted mb-2">신규 및 확정된 예약을 확인하고 관리합니다.</div>
       <div class="alert alert-danger d-none" data-role="reservations-error"></div>
       <div class="alert alert-success d-none" data-role="reservations-success">예약 상태가 업데이트되었습니다.</div>
-      <div class="alert alert-info d-none" data-role="reservations-empty">승인 대기 중인 예약이 없습니다.</div>
+      <div class="alert alert-info d-none" data-role="reservations-empty">예약 신청이 없습니다.</div>
       <div class="table-responsive d-none" data-role="reservations-table-wrapper">
         <table class="table table-sm align-middle mb-0">
           <thead class="table-light">
@@ -102,6 +102,7 @@
               <th scope="col">예약자</th>
               <th scope="col">활동</th>
               <th scope="col">요청 정보</th>
+              <th scope="col">상태</th>
               <th scope="col" class="text-end">처리</th>
             </tr>
           </thead>
@@ -541,7 +542,7 @@
             const params = [];
             if (companyId) params.push(`companyId=${encodeURIComponent(companyId)}`);
             if (force) params.push(`t=${Date.now()}`);
-            return `/api/reservations/pending${params.length ? '?' + params.join('&') : ''}`;
+            return `/api/reservations/for-company${params.length ? '?' + params.join('&') : ''}`;
           };
 
           const hideReservationSuccess = () => {
@@ -558,12 +559,31 @@
             }
           };
 
+          const reservationStatusBadge = (status) => {
+            const normalized = String(status || "").toUpperCase();
+            let variant = "secondary";
+            if (normalized === "CONFIRMED") variant = "success";
+            else if (normalized === "PENDING") variant = "warning";
+            else if (normalized === "CANCELED") variant = "danger";
+            return `<span class="badge bg-${variant}">${escapeHtml(normalized)}</span>`;
+          };
+
           const renderReservations = (items) => {
             if (!reservationsTbody) return;
             reservationsTbody.innerHTML = "";
             items.forEach((item) => {
               const row = document.createElement("tr");
               row.dataset.reservationId = String(item.id);
+
+              let buttons = '';
+              const status = (item.status || "").toUpperCase();
+              if (status === 'PENDING') {
+                buttons = `<button type="button" class="btn btn-outline-success" data-action="approve">승인</button>
+                           <button type="button" class="btn btn-outline-danger" data-action="reject">거절</button>`;
+              } else if (status === 'CONFIRMED') {
+                buttons = `<button type="button" class="btn btn-outline-danger" data-action="reject">예약 취소</button>`;
+              }
+
               row.innerHTML = `
                 <td>
                   <div>${escapeHtml(item.touristName || "")}</div>
@@ -578,11 +598,9 @@
                   <div>${formatDateTimeValue(item.createdAt)}</div>
                   ${item.specialRequest ? `<div class="text-muted small">${escapeHtml(item.specialRequest)}</div>` : ''}
                 </td>
+                <td>${reservationStatusBadge(item.status)}</td>
                 <td class="text-end">
-                  <div class="btn-group btn-group-sm" role="group">
-                    <button type="button" class="btn btn-outline-success" data-action="approve">승인</button>
-                    <button type="button" class="btn btn-outline-danger" data-action="reject">거절</button>
-                  </div>
+                  <div class="btn-group btn-group-sm" role="group">${buttons}</div>
                 </td>
               `;
               reservationsTbody.appendChild(row);
@@ -657,8 +675,8 @@
               successMessage = "예약을 승인했습니다.";
             } else if (action === "reject") {
               endpoint = `/api/reservations/${encodeURIComponent(reservationId)}/reject`;
-              confirmMessage = "해당 예약을 거절하시겠습니까?";
-              successMessage = "예약을 거절했습니다.";
+              confirmMessage = "해당 예약을 거절/취소하시겠습니까?";
+              successMessage = "예약을 거절/취소했습니다.";
             } else {
               return;
             }
@@ -678,12 +696,8 @@
                 const textResponse = await res.text();
                 throw new Error(textResponse || "예약 상태를 변경하지 못했습니다.");
               }
-              row.remove();
-              if (!reservationsTbody || reservationsTbody.children.length === 0) {
-                reservationsTableWrapper.classList.add("d-none");
-                reservationsEmpty.classList.remove("d-none");
-              }
               showReservationSuccess(successMessage);
+              loadReservations(true); // Reload the list
             } catch (err) {
               btn.disabled = false;
               btn.innerHTML = originalHtml;

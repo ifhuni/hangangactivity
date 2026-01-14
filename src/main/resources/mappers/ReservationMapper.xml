@@ -43,12 +43,6 @@
     JOIN public.tourists t ON r.tourist_id = t.id
   </sql>
 
-  <select id="findAllPending" resultMap="ReservationPendingMap">
-    <include refid="baseSelect" />
-    WHERE r.status = 'pending'
-    ORDER BY r.created_at ASC
-  </select>
-
   <select id="findPendingByCompanyId" parameterType="long" resultMap="ReservationPendingMap">
     <include refid="baseSelect" />
     WHERE r.status = 'pending'
@@ -56,10 +50,22 @@
     ORDER BY r.created_at ASC
   </select>
 
+  <select id="findReservationsForCompany" parameterType="long" resultMap="ReservationPendingMap">
+    <include refid="baseSelect" />
+    WHERE a.company_id = #{companyId}
+      AND r.status IN ('pending', 'confirmed')
+    ORDER BY r.created_at ASC
+  </select>
+
   <select id="findPendingById" parameterType="long" resultMap="ReservationPendingMap">
     <include refid="baseSelect" />
     WHERE r.id = #{reservationId}
       AND r.status = 'pending'
+  </select>
+
+  <select id="findById" parameterType="long" resultMap="ReservationPendingMap">
+    <include refid="baseSelect" />
+    WHERE r.id = #{reservationId}
   </select>
 
   <select id="findByActivityIdAndStatus" resultMap="ReservationPendingMap">
@@ -90,7 +96,7 @@
     UPDATE public.reservations
     SET status = #{status}
     WHERE id = #{reservationId}
-      AND status = 'pending'
+    AND status != 'canceled'
   </update>
 
 </mapper>

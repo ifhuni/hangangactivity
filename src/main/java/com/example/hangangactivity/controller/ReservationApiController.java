@@ -29,8 +29,8 @@ public class ReservationApiController {
         this.reservationService = reservationService;
     }
 
-    @GetMapping("/pending")
-    public ResponseEntity<List<ReservationPendingResponse>> listPending(@RequestParam(value = "companyId", required = false) Long companyId,
+    @GetMapping("/for-company")
+    public ResponseEntity<List<ReservationPendingResponse>> listForCompany(@RequestParam(value = "companyId", required = false) Long companyId,
                                                                         HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         ensureAuthenticated(session);
@@ -38,7 +38,7 @@ public class ReservationApiController {
         Long userId = (Long) session.getAttribute(AuthController.SESSION_COMPANY_USER_ID);
         String role = (String) session.getAttribute(AuthController.SESSION_COMPANY_ROLE);
 
-        List<ReservationPendingResponse> result = reservationService.listPendingForCompany(userId, role, companyId);
+        List<ReservationPendingResponse> result = reservationService.listForCompany(userId, role, companyId);
         return ResponseEntity.ok(result);
     }
 

@@ -91,7 +91,7 @@ public class ReservationService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to save reservation.");
         }
 
-        ReservationPending pending = reservationMapper.findPendingById(reservation.getId());
+        ReservationPending pending = reservationMapper.findById(reservation.getId());
         if (pending == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to load reservation data.");
         }
@@ -192,7 +192,7 @@ public class ReservationService {
                 .collect(Collectors.toList());
     }
 
-    public List<ReservationPendingResponse> listPendingForCompany(Long requesterUserId,
+    public List<ReservationPendingResponse> listForCompany(Long requesterUserId,
                                                                   String requesterRole,
                                                                   Long companyId) {
         CompanyUser user = requireUser(requesterUserId);
@@ -202,9 +202,9 @@ public class ReservationService {
             if (!isAdmin) {
                 companyId = user.getCompanyId();
             } else {
-                return reservationMapper.findAllPending().stream()
-                        .map(this::toResponse)
-                        .collect(Collectors.toList());
+                // Admins could see all, but for this feature, let's not implement that yet.
+                // A company filter is better.
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company ID is required for admins.");
             }
         }
 
@@ -218,22 +218,7 @@ public class ReservationService {
             }
         }
 
-        return reservationMapper.findPendingByCompanyId(companyId).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    public List<ReservationPendingResponse> listPendingForCurrentUser(Long requesterUserId, String requesterRole) {
-        CompanyUser user = requireUser(requesterUserId);
-        if (isAdmin(requesterRole)) {
-            return reservationMapper.findAllPending().stream()
-                    .map(this::toResponse)
-                    .collect(Collectors.toList());
-        }
-        if (user.getCompanyId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company registration is required.");
-        }
-        return reservationMapper.findPendingByCompanyId(user.getCompanyId()).stream()
+        return reservationMapper.findReservationsForCompany(companyId).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
@@ -253,7 +238,7 @@ public class ReservationService {
                                                     Long reservationId,
                                                     String targetStatus) {
         CompanyUser user = requireUser(requesterUserId);
-        ReservationPending reservation = reservationMapper.findPendingById(reservationId);
+        ReservationPending reservation = reservationMapper.findById(reservationId);
         if (reservation == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found or already processed.");
         }
@@ -268,7 +253,7 @@ public class ReservationService {
         String dbStatus = targetStatus.toLowerCase(Locale.ROOT);
         int updated = reservationMapper.updateStatus(reservationId, dbStatus);
         if (updated == 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Reservation status has already changed.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Reservation status could not be updated. It might have been already canceled.");
         }
 
         reservation.setStatus(dbStatus);
