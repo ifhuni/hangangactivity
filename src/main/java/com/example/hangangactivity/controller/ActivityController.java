@@ -97,7 +97,7 @@ public class ActivityController {
         String role = (String) session.getAttribute(AuthController.SESSION_COMPANY_ROLE);
 
         ActivityCreateRequest createRequest = buildRequest(title, category, description, location,
-                capacity, startAt, endAt, price, status, companyIdParam, image);
+                capacity, startAt, endAt, price, status, companyIdParam, image, false);
 
         ActivityResponse response = activityService.createActivity(userId, role, createRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -116,6 +116,7 @@ public class ActivityController {
                                                            @RequestParam(value = "status", required = false) String status,
                                                            @RequestParam(value = "companyId", required = false) String companyIdParam,
                                                            @RequestParam(value = "image", required = false) MultipartFile image,
+                                                           @RequestParam(value = "removeImage", defaultValue = "false") boolean removeImage,
                                                            HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         ensureAuthenticated(session);
@@ -124,7 +125,7 @@ public class ActivityController {
         String role = (String) session.getAttribute(AuthController.SESSION_COMPANY_ROLE);
 
         ActivityCreateRequest updateRequest = buildRequest(title, category, description, location,
-                capacity, startAt, endAt, price, status, companyIdParam, image);
+                capacity, startAt, endAt, price, status, companyIdParam, image, removeImage);
 
         ActivityResponse response = activityService.updateActivity(userId, role, activityId, updateRequest);
         return ResponseEntity.ok(response);
@@ -140,16 +141,13 @@ public class ActivityController {
                                                String price,
                                                String status,
                                                String companyIdParam,
-                                               MultipartFile image) {
+                                               MultipartFile image,
+                                               boolean removeImage) {
         Long companyId = parseLong(companyIdParam, "companyId");
         Integer capacityValue = parseInteger(capacity, "capacity");
         Integer priceValue = parseInteger(price, "price");
         LocalDateTime startAtValue = parseDateTime(startAt, "startAt");
         LocalDateTime endAtValue = parseDateTime(endAt, "endAt");
-
-        if (image != null && !image.isEmpty()) {
-            log.debug("Activity image upload is not yet supported. Ignoring file: {}", image.getOriginalFilename());
-        }
 
         return new ActivityCreateRequest(
                 companyId,
@@ -161,7 +159,9 @@ public class ActivityController {
                 startAtValue,
                 endAtValue,
                 priceValue,
-                status
+                status,
+                image,
+                removeImage
         );
     }
 

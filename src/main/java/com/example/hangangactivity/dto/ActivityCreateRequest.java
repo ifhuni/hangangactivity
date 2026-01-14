@@ -1,5 +1,7 @@
 package com.example.hangangactivity.dto;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import java.time.LocalDateTime;
 
 public class ActivityCreateRequest {
@@ -14,6 +16,8 @@ public class ActivityCreateRequest {
     private final LocalDateTime endAt;
     private final Integer price;
     private final String status;
+    private final MultipartFile image;
+    private final boolean removeImage;
 
     public ActivityCreateRequest(Long companyId,
                                  String title,
@@ -24,7 +28,9 @@ public class ActivityCreateRequest {
                                  LocalDateTime startAt,
                                  LocalDateTime endAt,
                                  Integer price,
-                                 String status) {
+                                 String status,
+                                 MultipartFile image,
+                                 boolean removeImage) {
         this.companyId = companyId;
         this.title = title;
         this.category = category;
@@ -35,6 +41,8 @@ public class ActivityCreateRequest {
         this.endAt = endAt;
         this.price = price;
         this.status = status;
+        this.image = image;
+        this.removeImage = removeImage;
     }
 
     public Long getCompanyId() { return companyId; }
@@ -47,4 +55,6 @@ public class ActivityCreateRequest {
     public LocalDateTime getEndAt() { return endAt; }
     public Integer getPrice() { return price; }
     public String getStatus() { return status; }
+    public MultipartFile getImage() { return image; }
+    public boolean isRemoveImage() { return removeImage; }
 }

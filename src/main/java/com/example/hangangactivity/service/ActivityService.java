@@ -32,10 +32,12 @@ public class ActivityService {
 
     private final ActivityMapper activityMapper;
     private final CompanyUserMapper companyUserMapper;
+    private final FileStorageService fileStorageService;
 
-    public ActivityService(ActivityMapper activityMapper, CompanyUserMapper companyUserMapper) {
+    public ActivityService(ActivityMapper activityMapper, CompanyUserMapper companyUserMapper, FileStorageService fileStorageService) {
         this.activityMapper = activityMapper;
         this.companyUserMapper = companyUserMapper;
+        this.fileStorageService = fileStorageService;
     }
 
     public List<ActivityResponse> listActivitiesForCompany(Long companyId) {
@@ -155,6 +157,16 @@ public class ActivityService {
             status = DEFAULT_STATUS;
         }
 
+        if (request.isRemoveImage()) {
+            target.setImageUrl(null);
+        } else if (request.getImage() != null && !request.getImage().isEmpty()) {
+            String imageUrl = fileStorageService.store(request.getImage());
+            target.setImageUrl(imageUrl);
+        } else if (existing != null) {
+            target.setImageUrl(existing.getImageUrl());
+        }
+
+
         target.setCompanyId(Math.toIntExact(companyId));
         target.setTitle(title);
         target.setDescription(request.getDescription());
@@ -166,7 +178,6 @@ public class ActivityService {
         target.setEndTime(resolveEndTime(endAt, startAt));
         target.setStatus(status.toUpperCase(Locale.ROOT));
         target.setPrice(request.getPrice() != null ? request.getPrice() : existing != null ? existing.getPrice() : null);
-        target.setImageUrl(existing != null ? existing.getImageUrl() : null);
     }
 
     private LocalTime resolveEndTime(LocalDateTime endAt, LocalDateTime startAt) {

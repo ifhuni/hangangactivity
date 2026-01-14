@@ -236,7 +236,14 @@
               </div>
               <div class="col-12">
                 <label class="form-label">대표 이미지</label>
-                <input type="file" class="form-control" name="image">
+                <div id="imagePreviewContainer" class="mb-2" style="max-height: 200px; overflow: hidden;">
+                  <img id="imagePreview" src="" alt="Image preview" class="img-fluid rounded" style="display: none;"/>
+                </div>
+                <div class="input-group">
+                  <input type="file" class="form-control" name="image" id="imageInput">
+                  <button class="btn btn-outline-secondary" type="button" id="removeImageBtn" style="display: none;">이미지 제거</button>
+                </div>
+                <input type="hidden" name="removeImage" id="removeImage" value="false">
               </div>
             </div>
             <div class="alert alert-danger d-none mt-3" id="activityCreateError"></div>
@@ -275,6 +282,10 @@
       const activitySubmitLabel = activityModalSubmit?.querySelector('[data-role="activity-submit-label"]');
       const activityModalTitle = activityModal?.querySelector(".modal-title");
       const activityImageInput = activityForm?.querySelector('input[name="image"]');
+      const imagePreview = document.getElementById('imagePreview');
+      const removeImageBtn = document.getElementById('removeImageBtn');
+      const removeImageInput = document.getElementById('removeImage');
+
       const activityFields = activityForm ? {
         title: activityForm.elements.namedItem('title'),
         category: activityForm.elements.namedItem('category'),
@@ -365,6 +376,11 @@
         hideActivityMessages();
         activityForm.classList.remove("was-validated");
         activityImageInput && (activityImageInput.value = "");
+        removeImageInput.value = 'false';
+        imagePreview.style.display = 'none';
+        imagePreview.src = '';
+        removeImageBtn.style.display = 'none';
+
 
         if (mode === "edit") {
           activityIdField.value = activity?.id != null ? activity.id : "";
@@ -380,6 +396,13 @@
           activityModalTitle && (activityModalTitle.textContent = "활동 수정");
           activitySubmitLabel && (activitySubmitLabel.textContent = "수정");
           activityForm.dataset.mode = "edit";
+
+          if(activity?.imageUrl) {
+            imagePreview.src = activity.imageUrl;
+            imagePreview.style.display = 'block';
+            removeImageBtn.style.display = 'inline-block';
+          }
+
         } else {
           activityIdField.value = "";
           activityForm.reset();
@@ -391,6 +414,28 @@
           activityForm.dataset.mode = "create";
         }
       }
+
+      activityImageInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+                removeImageBtn.style.display = 'inline-block';
+                removeImageInput.value = 'false';
+            }
+            reader.readAsDataURL(file);
+        }
+      });
+
+      removeImageBtn.addEventListener('click', function() {
+        imagePreview.src = '';
+        imagePreview.style.display = 'none';
+        activityImageInput.value = '';
+        removeImageBtn.style.display = 'none';
+        removeImageInput.value = 'true';
+      });
 
       document.querySelectorAll('[data-bs-target="#activityCreateModal"]').forEach(btn => {
         btn.addEventListener("click", () => setActivityModal("create"));
