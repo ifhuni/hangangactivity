@@ -19,11 +19,7 @@
                 <option value="마포구" th:selected="${param.region} == '마포구'">마포구</option>
                 <option value="송파구" th:selected="${param.region} == '송파구'">송파구</option>
                 <option value="양천구" th:selected="${param.region} == '양천구'">양천구</option>
-                <option th:if="${param.region != null and param.region != '' and not #lists.contains({'광진구', '강남구', '마포구', '송파구', '양천구'}, param.region)}"
-                        th:value="${param.region}"
-                        th:text="${param.region}"
-                        selected>
-                </option>
+
               </select>
             </div>
 
@@ -42,11 +38,7 @@
                 <option value="육상" th:selected="${param.activityType} == '육상'">육상</option>
                 <option value="수상" th:selected="${param.activityType} == '수상'">수상</option>
                 <option value="공중" th:selected="${param.activityType} == '공중'">공중</option>
-                <option th:if="${param.activityType != null and param.activityType != '' and not #lists.contains({'육상', '수상', '공중'}, param.activityType)}"
-                        th:value="${param.activityType}"
-                        th:text="${param.activityType}"
-                        selected>
-                </option>
+
               </select>
             </div>
 
